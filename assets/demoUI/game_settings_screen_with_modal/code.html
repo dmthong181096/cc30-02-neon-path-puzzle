@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Neon Path Puzzle - Settings</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "primary-glow": "#9d4dff",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#141118",
+                        "surface-dark": "#1e1826",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(127, 13, 242, 0.5), 0 0 20px rgba(127, 13, 242, 0.3)',
+                        'neon-sm': '0 0 5px rgba(127, 13, 242, 0.5)',
+                        'neon-text': '0 0 8px rgba(127, 13, 242, 0.6)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141118;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #302839;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7f0df2;
+        }
+        
+        .glass-panel {
+            background: rgba(30, 24, 38, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .neon-border-bottom {
+            border-bottom: 1px solid rgba(127, 13, 242, 0.3);
+            box-shadow: 0 4px 20px -10px rgba(127, 13, 242, 0.5);
+        }
+        
+        /* Toggle Switch Styling Override */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #7f0df2;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #7f0df2;
+        }
+        
+        /* Background Grid Animation */
+        .bg-grid-pattern {
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(127, 13, 242, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(127, 13, 242, 0.05) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-display overflow-hidden h-screen w-screen flex items-center justify-center relative">
+<!-- Desktop Background Ambience -->
+<div class="absolute inset-0 z-0 bg-background-dark bg-grid-pattern">
+<!-- Abstract gradient orbs -->
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[100px] animate-pulse-slow"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-900/20 rounded-full blur-[120px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+</div>
+<!-- Phone Simulator Container -->
+<div class="relative z-10 w-full h-full sm:h-[800px] sm:w-[400px] sm:rounded-[3rem] sm:border-8 sm:border-[#0f0c12] bg-background-dark shadow-2xl overflow-hidden flex flex-col group/design-root" style="box-shadow: 0 0 50px rgba(0,0,0,0.8);">
+<!-- Status Bar (Cosmetic) -->
+<div class="h-8 w-full bg-background-dark flex items-center justify-between px-6 pt-2 select-none opacity-70 text-xs font-body">
+<span>9:41</span>
+<div class="flex gap-2 text-[10px]">
+<span class="material-symbols-outlined text-[14px]">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[14px]">wifi</span>
+<span class="material-symbols-outlined text-[14px]">battery_full</span>
+</div>
+</div>
+<!-- Header -->
+<header class="flex items-center justify-between px-6 py-4 neon-border-bottom relative z-20 bg-background-dark/80 backdrop-blur-md">
+<button class="size-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-white/80 hover:text-white">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h2 class="text-white text-xl font-bold tracking-[0.2em] drop-shadow-[0_0_8px_rgba(127,13,242,0.8)]">SETTINGS</h2>
+<div class="size-10"></div> <!-- Spacer for balance -->
+</header>
+<!-- Main Content (Scrollable) -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-2 relative">
+<!-- Section Label -->
+<div class="text-xs font-bold text-white/40 uppercase tracking-widest mb-4 mt-2 px-2">General</div>
+<!-- Sound Toggle -->
+<div class="flex items-center gap-4 bg-surface-dark/50 border border-white/5 rounded-2xl px-4 py-3 min-h-16 justify-between hover:bg-surface-dark transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">volume_up</span>
+</div>
+<p class="text-white text-base font-normal leading-normal flex-1 truncate">Sound</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-[#302839] p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300">
+<div class="h-[20px] w-[20px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Music Toggle -->
+<div class="flex items-center gap-4 bg-surface-dark/50 border border-white/5 rounded-2xl px-4 py-3 min-h-16 justify-between hover:bg-surface-dark transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">music_note</span>
+</div>
+<p class="text-white text-base font-normal leading-normal flex-1 truncate">Music</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-[#302839] p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300">
+<div class="h-[20px] w-[20px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Vibration Toggle -->
+<div class="flex items-center gap-4 bg-surface-dark/50 border border-white/5 rounded-2xl px-4 py-3 min-h-16 justify-between hover:bg-surface-dark transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">vibration</span>
+</div>
+<p class="text-white text-base font-normal leading-normal flex-1 truncate">Vibration</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-[#302839] p-1 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300">
+<div class="h-[20px] w-[20px] rounded-full bg-white shadow-sm"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-6"></div>
+<!-- Section Label -->
+<div class="text-xs font-bold text-white/40 uppercase tracking-widest mb-4 px-2">Data &amp; Info</div>
+<!-- Reset Progress -->
+<div class="flex items-center gap-4 bg-surface-dark/50 border border-white/5 rounded-2xl px-4 py-3 min-h-16 justify-between hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="text-red-400 group-hover:text-red-300 flex items-center justify-center rounded-xl bg-red-500/10 group-hover:bg-red-500/20 shrink-0 size-10 transition-colors">
+<span class="material-symbols-outlined">restart_alt</span>
+</div>
+<p class="text-white text-base font-normal leading-normal flex-1 truncate">Reset Game Progress</p>
+</div>
+<div class="shrink-0">
+<span class="material-symbols-outlined text-white/30">chevron_right</span>
+</div>
+</div>
+<!-- About -->
+<div class="flex items-center gap-4 bg-surface-dark/50 border border-white/5 rounded-2xl px-4 py-3 min-h-16 justify-between hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="text-white flex items-center justify-center rounded-xl bg-white/5 shrink-0 size-10">
+<span class="material-symbols-outlined">info</span>
+</div>
+<p class="text-white text-base font-normal leading-normal flex-1 truncate">About</p>
+</div>
+<div class="shrink-0">
+<span class="material-symbols-outlined text-white/30">chevron_right</span>
+</div>
+</div>
+<!-- Version Number -->
+<div class="w-full text-center mt-8 pb-4">
+<p class="text-white/20 text-xs font-mono">NEON PATH v2.4.0</p>
+</div>
+</div>
+<!-- Navigation Bar (Simulated) -->
+<div class="h-16 border-t border-white/5 bg-[#141118] flex items-center justify-around px-6 relative z-20">
+<button class="flex flex-col items-center gap-1 text-white/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-white/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">leaderboard</span>
+</button>
+<div class="size-12 rounded-full bg-primary shadow-neon flex items-center justify-center -mt-6 border-4 border-[#141118]">
+<span class="material-symbols-outlined text-white">play_arrow</span>
+</div>
+<button class="flex flex-col items-center gap-1 text-white/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary drop-shadow-[0_0_5px_rgba(127,13,242,0.8)]">
+<span class="material-symbols-outlined fill-current">settings</span>
+</button>
+</div>
+<!-- Confirmation Modal Overlay -->
+<div class="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-6 animate-fade-in">
+<div class="glass-panel w-full max-w-xs rounded-3xl p-6 border border-primary/50 flex flex-col items-center text-center shadow-[0_0_40px_-10px_rgba(127,13,242,0.4)] relative overflow-hidden">
+<!-- Glow Effect inside modal -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-primary shadow-[0_0_20px_2px_rgba(127,13,242,0.8)]"></div>
+<div class="mb-4 p-4 rounded-full bg-primary/10 text-primary border border-primary/20">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 0, 'wght' 300;">warning</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-2 tracking-wide font-display">Reset Progress?</h3>
+<p class="text-sm text-gray-300 mb-8 font-body leading-relaxed">
+                    Are you sure you want to delete all saved data? This action cannot be undone.
+                </p>
+<div class="flex flex-col gap-3 w-full">
+<!-- Yes Button -->
+<button class="w-full py-3.5 rounded-xl bg-primary text-white font-bold tracking-wider hover:bg-[#9d4dff] hover:shadow-neon transition-all duration-200 active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">check</span>
+                        YES, RESET
+                    </button>
+<!-- No Button -->
+<button class="w-full py-3.5 rounded-xl bg-transparent border border-white/20 text-white/70 font-medium hover:bg-white/5 hover:text-white hover:border-white/50 transition-all duration-200 active:scale-95">
+                        NO, CANCEL
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

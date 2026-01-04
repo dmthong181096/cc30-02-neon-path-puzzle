@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Neon Path Puzzle - Game Over</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#191022",
+                        "neon-blue": "#0df2e6",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "neon": "0 0 10px rgba(127, 13, 242, 0.5), 0 0 20px rgba(127, 13, 242, 0.3)",
+                        "neon-strong": "0 0 15px rgba(127, 13, 242, 0.7), 0 0 30px rgba(127, 13, 242, 0.4)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Scanline effect overlay */
+        .scanlines {
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 font-display flex items-center justify-center min-h-screen p-4 sm:p-8">
+<!-- Desktop Background Container -->
+<div class="fixed inset-0 z-0">
+<!-- Abstract blurred background for desktop context -->
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&amp;w=2070&amp;auto=format&amp;fit=crop')] bg-cover bg-center opacity-30 blur-xl" data-alt="Abstract cybernetic dark background with blue and purple neon lights"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80"></div>
+</div>
+<!-- Phone Container (9:16 Aspect Ratio Simulation) -->
+<div class="relative z-10 w-full max-w-[400px] aspect-[9/19] sm:aspect-[9/18] bg-background-dark rounded-[2.5rem] shadow-2xl border-[8px] border-gray-800 overflow-hidden flex flex-col ring-1 ring-white/10">
+<!-- Game Background Layer (Blurred) -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-[url('https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&amp;w=2070&amp;auto=format&amp;fit=crop')] bg-cover bg-center" data-alt="Neon grid puzzle game background"></div>
+<div class="absolute inset-0 bg-[#0a0510]/80 backdrop-blur-sm"></div>
+<!-- Grid overlay for tech feel -->
+<div class="absolute inset-0 bg-[linear-gradient(rgba(127,13,242,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(127,13,242,0.1)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+</div>
+<!-- Scanline Effect -->
+<div class="absolute inset-0 scanlines z-20 opacity-20 pointer-events-none"></div>
+<!-- Main Content Area -->
+<div class="relative z-30 flex flex-col h-full w-full overflow-y-auto no-scrollbar p-6 items-center justify-center">
+<!-- Modal Card -->
+<div class="w-full bg-[#1e1629]/90 backdrop-blur-xl border border-primary/40 rounded-2xl shadow-neon flex flex-col p-1 overflow-hidden animate-fade-in-up">
+<!-- Decorative Top Bar -->
+<div class="h-1 w-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-80"></div>
+<div class="px-6 py-8 flex flex-col items-center text-center">
+<!-- Icon / Header Graphic -->
+<div class="mb-5 relative">
+<div class="absolute inset-0 bg-primary/20 blur-xl rounded-full transform scale-150"></div>
+<span class="material-symbols-outlined text-6xl text-primary relative z-10 drop-shadow-[0_0_10px_rgba(127,13,242,0.8)]">
+                            warning
+                        </span>
+</div>
+<!-- Headline -->
+<h1 class="text-white tracking-wider text-3xl font-bold leading-tight mb-2 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
+                        SYSTEM FAILURE
+                    </h1>
+<p class="text-gray-400 text-sm font-medium tracking-widest uppercase mb-8">
+                        Sequence Interrupted
+                    </p>
+<!-- Stats Container -->
+<div class="w-full grid grid-cols-2 gap-3 mb-8">
+<!-- Stat 1 -->
+<div class="flex flex-col gap-1 rounded-xl p-4 bg-background-dark/60 border border-white/5 relative group">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
+<p class="text-gray-400 text-xs font-bold uppercase tracking-wider z-10">Score</p>
+<p class="text-white tracking-tight text-2xl font-bold leading-none drop-shadow-md z-10">8,450</p>
+</div>
+<!-- Stat 2 -->
+<div class="flex flex-col gap-1 rounded-xl p-4 bg-background-dark/60 border border-white/5 relative group">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
+<p class="text-gray-400 text-xs font-bold uppercase tracking-wider z-10">Level</p>
+<p class="text-white tracking-tight text-2xl font-bold leading-none drop-shadow-md z-10">12</p>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-3">
+<!-- Retry Button (Primary) -->
+<button class="group relative w-full cursor-pointer overflow-hidden rounded-xl bg-primary h-14 px-6 flex items-center justify-center gap-3 shadow-neon transition-all duration-300 hover:shadow-neon-strong hover:-translate-y-0.5 active:translate-y-0">
+<!-- Button Glare Effect -->
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+<span class="material-symbols-outlined text-white text-[24px]">replay</span>
+<span class="text-white text-base font-bold tracking-wider">RETRY</span>
+</button>
+<!-- Main Menu Button (Secondary) -->
+<button class="w-full cursor-pointer flex items-center justify-center rounded-xl h-12 px-6 bg-[#302839]/80 border border-white/10 text-white hover:bg-[#302839] hover:border-primary/50 hover:text-primary transition-all duration-200 gap-2">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+<span class="text-sm font-bold tracking-wider">MAIN MENU</span>
+</button>
+<!-- Exit Button (Tertiary) -->
+<button class="w-full cursor-pointer flex items-center justify-center rounded-xl h-10 px-4 bg-transparent text-gray-500 hover:text-white transition-colors duration-200 mt-2">
+<span class="text-xs font-bold tracking-widest">EXIT GAME</span>
+</button>
+</div>
+</div>
+<!-- Decorative Bottom Bar -->
+<div class="h-0.5 w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+</div>
+<!-- Contextual Tip (Optional Polish) -->
+<div class="mt-8 px-4 py-3 rounded-lg bg-black/40 backdrop-blur-md border-l-2 border-primary max-w-[85%]">
+<p class="text-xs text-gray-300 leading-relaxed text-center italic">
+<span class="text-primary font-bold not-italic mr-1">TIP:</span> 
+                    Connect the neon nodes before the timer runs out to multiply your score.
+                </p>
+</div>
+</div>
+<!-- Phone UI Bar (Bottom) -->
+<div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-40"></div>
+</div>
+</body></html>

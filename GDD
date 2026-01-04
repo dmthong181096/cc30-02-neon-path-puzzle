@@ -1,0 +1,275 @@
+1. Thông tin tổng quan
+Tên game: Neon Path Puzzle
+Thể loại: Puzzle (logic, pathfinding)
+Nền tảng mục tiêu: Web (HTML5/Canvas) – độ phân giải chuẩn 1280 x 720, hỗ trợ responsive.
+Mục tiêu thiết kế:
+
+Trò chơi giải đố ngắn, dễ hiểu, khó master.
+
+Dùng làm portfolio: thể hiện UI/UX, logic xử lý lưới, animation, state management.
+
+2. Core gameplay
+Mục tiêu người chơi
+
+Nối các điểm neon theo đúng thứ tự số/màu trên lưới, tạo ra một đường đi liên tục mà không tự cắt chính mình và không vi phạm luật.
+
+Một màn chơi kết thúc khi người chơi:
+
+Hoàn thành đủ các điểm cần kết nối, hoặc
+
+Thua do hết lượt, đi sai luật hoặc kẹt đường.
+
+Mô tả cơ chế chính
+
+Lưới ô vuông: mặc định 8x8.
+
+Một số ô chứa Node:
+
+Mỗi node có: màu (color), số thứ tự (order index: 1, 2, 3, ...).
+
+Người chơi điều khiển đường neon đi qua các ô:
+
+Bắt đầu từ node số 1.
+
+Chỉ được di chuyển lên/xuống/trái/phải (4 hướng).
+
+Mỗi ô lưới chỉ được đi qua 1 lần (trừ node đặc biệt nếu muốn cho phép “đè” – tùy phiên bản).
+
+Khi đến node tiếp theo đúng thứ tự (ví dụ đang từ 1 => 2):
+
+Phần đường đã đi sẽ được “khóa” lại (giữ hiệu ứng sáng).
+
+Người chơi tiếp tục đi từ node vừa đến.
+
+Kết thúc thắng:
+
+Đi được hết tất cả các node theo thứ tự cho trước.
+
+Kết thúc thua:
+
+Hết số bước cho phép (move limit).
+
+Không còn ô hợp lệ để đi (bị kẹt) mà chưa hoàn thành.
+
+Tùy chọn: đi vào ô “bẫy” hoặc vi phạm luật (ví dụ chạm tường cứng).
+
+Điều khiển
+
+Web/PC:
+
+Click chuột vào node bắt đầu (số 1), sau đó click kéo (drag) hoặc click từng ô để vẽ đường.
+
+Hoặc dùng phím mũi tên sau khi chọn node bắt đầu (nếu muốn hỗ trợ).
+
+Mobile/touch (nếu sau này hỗ trợ):
+
+Chạm vào node bắt đầu, giữ và kéo qua các ô liền kề.
+
+3. Luật chơi chi tiết
+Luật cơ bản
+
+Chỉ được đi sang ô liền kề theo hàng/cột (không chéo).
+
+Không được đi vào ô đã là một phần của đường neon trước đó.
+
+Phải đi qua các node theo đúng thứ tự (1 -> 2 -> 3 -> ...).
+
+Mỗi level có giới hạn Moves (số bước đi tối đa). Mỗi lần di chuyển sang ô khác tính là 1 bước.
+
+Nếu số bước thực hiện > giới hạn, game over.
+
+Biến thể / Element nâng cao (tùy scope)
+
+Ô tường (Wall):
+
+Ô không thể đi vào, buộc người chơi phải tìm đường vòng.
+
+Ô portal (cổng dịch chuyển):
+
+Vào một ô portal màu A, xuất hiện ở ô portal màu A còn lại.
+
+Ô chuyển màu (Color changer):
+
+Khi đi qua, màu đường neon đổi màu, có thể dùng để unlock một số cửa/ô đặc biệt (nếu muốn nâng scope).
+
+Để làm portfolio, có thể bắt đầu với: lưới + node + wall + move limit. Các element khác có thể ghi trong GDD như “future feature”.
+
+4. Level design
+Cấu trúc level
+
+Level 1–5: giới thiệu cơ bản.
+
+Ít node (2–3 node), không có tường, move limit rộng rãi.
+
+Level 6–10: có tường và đường đi bắt đầu phải suy nghĩ.
+
+3–4 node, bắt đầu có dead-end.
+
+Level 11+ (nếu làm thêm): thêm portal, color changer.
+
+Dữ liệu level
+
+Mỗi level có thể được mô tả bằng JSON:
+
+json
+{
+  "id": 1,
+  "rows": 8,
+  "cols": 8,
+  "moveLimit": 30,
+  "grid": [
+    ["E", "E", "E", "E", "E", "E", "E", "E"],
+    ["E", "W", "E", "E", "E", "E", "E", "E"],
+    ["E", "E", "N1R", "E", "E", "E", "E", "E"],
+    ["E", "E", "E", "E", "W", "E", "E", "E"],
+    ["E", "E", "E", "E", "E", "E", "N2B", "E"],
+    ["E", "E", "E", "E", "E", "E", "E", "E"],
+    ["E", "E", "E", "E", "E", "E", "E", "E"],
+    ["E", "E", "E", "E", "E", "E", "E", "E"]
+  ]
+}
+Quy ước ví dụ:
+
+"E": Empty.
+
+"W": Wall.
+
+"N1R": Node số 1, màu Red.
+
+"N2B": Node số 2, màu Blue.
+
+Bạn có thể tự định nghĩa dạng khác miễn code dễ parse.
+
+5. Giao diện & trình bày
+Độ phân giải chính: 1280 x 720 (16:9, ngang).
+
+Bố cục gợi ý
+
+Trung tâm: lưới 8x8 (chiếm khoảng 60–70% chiều ngang).
+
+Bên phải: panel thông tin:
+
+Tiêu đề level (Level 1, Level 2...).
+
+Move: current / limit.
+
+Timer (nếu dùng).
+
+Nút: Restart, Next, Home/Back.
+
+Phía trên cùng: logo/title game “NEON PATH PUZZLE”.
+
+Phía dưới: status text (thắng/thua, gợi ý, tutorial).
+
+Phong cách đồ họa
+
+Background: đen/xanh dương đậm + gradient tím.
+
+Ô lưới: vuông bo tròn, viền neon mờ.
+
+Node: hình tròn phát sáng mạnh, viền dày, số thứ tự ở giữa.
+
+Đường neon:
+
+Vẽ liền qua tâm các ô.
+
+Màu theo node (ví dụ từ 1->2: màu của node 1).
+
+Thêm glow nhẹ để nổi bật trên nền tối.
+
+UI/UX
+
+Hover effect:
+
+Khi di chuột vào ô hợp lệ, viền ô sáng lên.
+
+Feedback:
+
+Thắng: popup nhỏ “Level Complete”, anim đường neon sáng mạnh, nút “Next Level”.
+
+Thua: popup “Game Over”, có nút “Retry”.
+
+6. Hệ thống & kiến trúc
+Các state chính
+
+MainMenu
+
+LevelSelect (tùy có làm hay không)
+
+InGame
+
+Pause (tạm dừng)
+
+Result (Win/Lose)
+
+Đối tượng chính trong code
+
+Game
+
+Quản lý state, vòng lặp game, update & render.
+
+Grid
+
+rows, cols, mảng 2D các ô.
+
+Hàm vẽ lưới, vẽ đường, vẽ node.
+
+Cell
+
+type: empty, wall, node, portal, ...
+
+nodeInfo: index, color.
+
+Path
+
+Danh sách các tọa độ ô đã đi.
+
+Hàm addStep, undoStep (nếu có), kiểm tra hợp lệ.
+
+LevelManager
+
+Load level từ JSON.
+
+Chuyển level, reset level.
+
+InputManager
+
+Xử lý click/drag.
+
+Logic kiểm tra hợp lệ
+
+Khi người chơi đi sang ô mới:
+
+Kiểm tra ô có nằm trong lưới.
+
+Kiểm tra không phải wall.
+
+Kiểm tra ô chưa nằm trong path.
+
+Nếu là node: đúng index tiếp theo?
+
+Cập nhật move, kiểm tra moveLimit.
+
+7. Âm thanh & hiệu ứng
+Sound:
+
+SFX click ô, SFX khi hoàn thành node, SFX khi win/lose.
+
+BGM nhẹ nhàng, hơi future/sci-fi.
+
+Hiệu ứng:
+
+Glow cho đường neon khi path hoàn chỉnh.
+
+Particle nhỏ khi kết nối được một node.
+
+8. Mục tiêu cho portfolio
+Khi hoàn thành, project nên thể hiện:
+
+Code sạch, tách rõ logic game và rendering.
+
+Dùng data-driven level (JSON).
+
+UI đẹp, animation mượt.
+
+Có README mô tả GDD (tóm tắt), screenshot, link demo online.

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Neon Path Puzzle</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "primary-glow": "#9d4dff",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#0a0710", // Deeper dark for high contrast
+                        "neon-blue": "#00f0ff",
+                        "neon-pink": "#ff0099",
+                        "neon-green": "#0aff00",
+                        "neon-yellow": "#ffea00",
+                        "surface": "#1e1629",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                    boxShadow: {
+                        'neon-primary': '0 0 10px #7f0df2, 0 0 20px #7f0df2',
+                        'neon-blue': '0 0 8px #00f0ff, 0 0 16px #00f0ff',
+                        'neon-pink': '0 0 8px #ff0099, 0 0 16px #ff0099',
+                        'neon-green': '0 0 8px #0aff00, 0 0 16px #0aff00',
+                        'neon-yellow': '0 0 8px #ffea00, 0 0 16px #ffea00',
+                        'neon-border': '0 0 5px rgba(255,255,255,0.3)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0710;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #302839;
+            border-radius: 4px;
+        }.text-neon {
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px currentColor;
+        }.scanlines {
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+        }
+    </style>
+</head>
+<body class="bg-[#141118] dark:bg-background-dark font-display text-white h-screen overflow-hidden flex items-center justify-center relative">
+<div class="absolute inset-0 z-0 overflow-hidden">
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&amp;w=2070&amp;auto=format&amp;fit=crop')] bg-cover bg-center blur-2xl opacity-20" data-alt="Abstract dark cyberpunk city lights blurred background"></div>
+<div class="absolute inset-0 bg-background-dark/80"></div>
+<div class="absolute inset-0 scanlines opacity-30 pointer-events-none"></div>
+</div>
+<div class="relative z-10 w-full max-w-[420px] h-full max-h-[850px] bg-background-dark rounded-[2.5rem] border-[8px] border-[#302839] shadow-2xl overflow-hidden flex flex-col ring-1 ring-white/10">
+<div class="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-white/5 to-transparent pointer-events-none"></div>
+<header class="flex flex-col items-center justify-center pt-10 pb-4 px-6 relative z-20">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-3xl animate-pulse" style="text-shadow: 0 0 15px #7f0df2;">hexagon</span>
+</div>
+<h1 class="text-2xl font-bold tracking-widest text-white text-center text-neon uppercase" style="color: #fff;">
+                Neon Path
+                <span class="block text-primary text-sm font-normal tracking-[0.3em] mt-1">Puzzle</span>
+</h1>
+<div class="w-full flex justify-center mt-5 mb-1 relative">
+<div class="relative bg-white/5 px-12 py-2 rounded-xl border border-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(0,240,255,0.15)] flex flex-col items-center overflow-hidden group hover:shadow-[0_0_25px_rgba(0,240,255,0.25)] transition-shadow duration-500">
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none"></div>
+<div class="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-neon-blue rounded-tl-sm shadow-[0_0_5px_#00f0ff]"></div>
+<div class="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-neon-blue rounded-tr-sm shadow-[0_0_5px_#00f0ff]"></div>
+<div class="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-neon-blue rounded-bl-sm shadow-[0_0_5px_#00f0ff]"></div>
+<div class="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-neon-blue rounded-br-sm shadow-[0_0_5px_#00f0ff]"></div>
+<span class="relative z-10 text-[10px] text-neon-blue uppercase tracking-[0.3em] font-bold mb-0.5 drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]">Score</span>
+<span class="relative z-10 text-4xl font-bold text-white font-display tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]">2,450</span>
+</div>
+</div>
+<div class="flex items-center justify-between w-full mt-4 px-2">
+<div class="flex flex-col items-center">
+<span class="text-xs text-gray-400 uppercase tracking-wider">Level</span>
+<span class="text-xl font-bold text-neon-blue drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]">12</span>
+</div>
+<div class="h-8 w-[1px] bg-white/10"></div>
+<div class="flex flex-col items-center">
+<span class="text-xs text-gray-400 uppercase tracking-wider">Moves</span>
+<span class="text-xl font-bold text-white">05</span>
+</div>
+<div class="h-8 w-[1px] bg-white/10"></div>
+<div class="flex flex-col items-center">
+<span class="text-xs text-gray-400 uppercase tracking-wider">Best</span>
+<span class="text-xl font-bold text-neon-pink drop-shadow-[0_0_5px_rgba(255,0,153,0.8)]">98</span>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col justify-center items-center px-4 relative">
+<div class="absolute inset-0 bg-primary/5 blur-3xl rounded-full"></div>
+<div class="relative grid grid-cols-8 gap-1.5 p-3 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm shadow-[0_0_30px_rgba(127,13,242,0.15)] w-full aspect-square max-w-[360px]">
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-neon-blue bg-background-dark shadow-neon-blue flex items-center justify-center z-10">
+<span class="text-neon-blue font-bold text-sm">1</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="absolute w-[140%] h-1 bg-neon-blue shadow-neon-blue left-1/2 z-0"></div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-neon-blue bg-background-dark shadow-neon-blue flex items-center justify-center z-10">
+<span class="text-neon-blue font-bold text-sm">2</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="absolute h-[140%] w-1 bg-neon-blue shadow-neon-blue top-1/2 z-0"></div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-neon-pink bg-background-dark shadow-neon-pink flex items-center justify-center z-10">
+<span class="text-neon-pink font-bold text-sm">3</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="absolute w-[140%] h-1 bg-neon-pink shadow-neon-pink right-1/2 z-0"></div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-white bg-background-dark shadow-[0_0_10px_white] flex items-center justify-center z-10 relative">
+<div class="absolute inset-0 rounded-full border border-neon-blue/50"></div>
+</div>
+<div class="absolute h-[70%] w-1 bg-neon-blue shadow-neon-blue bottom-1/2 z-0"></div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-neon-green bg-background-dark shadow-neon-green flex items-center justify-center z-10">
+<span class="text-neon-green font-bold text-sm">1</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="absolute h-[140%] w-1 bg-neon-green shadow-neon-green top-1/2 -rotate-45 z-0 opacity-50"></div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="absolute h-[140%] w-1 bg-neon-pink shadow-neon-pink top-1/2 z-0 opacity-40 animate-pulse"></div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-neon-green bg-background-dark shadow-neon-green flex items-center justify-center z-10">
+<span class="text-neon-green font-bold text-sm">2</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-neon-yellow bg-background-dark shadow-neon-yellow flex items-center justify-center z-10">
+<span class="text-neon-yellow font-bold text-sm">1</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-primary bg-background-dark shadow-neon-primary flex items-center justify-center z-10">
+<span class="text-primary font-bold text-sm">4</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors"></div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-primary bg-background-dark shadow-neon-primary flex items-center justify-center z-10">
+<span class="text-primary font-bold text-sm">3</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="absolute w-[140%] h-1 bg-primary shadow-neon-primary right-1/2 z-0"></div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-primary bg-background-dark shadow-neon-primary flex items-center justify-center z-10">
+<span class="text-primary font-bold text-sm">2</span>
+</div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="absolute w-[140%] h-1 bg-primary shadow-neon-primary right-1/2 z-0"></div>
+</div>
+<div class="aspect-square bg-surface/50 rounded-md border border-white/5 relative flex items-center justify-center group hover:border-primary/50 transition-colors">
+<div class="w-2/3 h-2/3 rounded-full border-2 border-primary bg-background-dark shadow-neon-primary flex items-center justify-center z-10">
+<span class="text-primary font-bold text-sm">1</span>
+</div>
+</div>
+</div>
+<p class="mt-6 text-sm text-gray-400 font-light tracking-wide animate-pulse">Connect nodes of same color</p>
+</main>
+<footer class="p-6 pb-12 w-full flex flex-col gap-4 relative z-20">
+<div class="flex gap-4">
+<button class="flex-1 h-12 rounded-lg bg-[#302839] hover:bg-[#3d3349] border border-white/10 text-white font-semibold text-sm tracking-wide uppercase flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+                    Settings
+                </button>
+<button class="h-12 w-12 rounded-lg bg-[#302839] hover:bg-[#3d3349] border border-white/10 text-white flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">undo</span>
+</button>
+<button class="h-12 w-12 rounded-lg bg-[#302839] hover:bg-[#3d3349] border border-white/10 text-white flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">lightbulb</span>
+</button>
+</div>
+</footer>
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-30"></div>
+</div>
+
+</body></html>
