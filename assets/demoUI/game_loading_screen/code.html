@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Neon Path Puzzle - Loading</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "primary-light": "#a855f7",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#141118",
+                        "surface-dark": "#1e1628",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(to right, #2a2136 1px, transparent 1px), linear-gradient(to bottom, #2a2136 1px, transparent 1px)",
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(127, 13, 242, 0.5), 0 0 20px rgba(127, 13, 242, 0.3)',
+                        'neon-text': '0 0 5px rgba(168, 85, 247, 0.8)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-[#050406] text-white font-display flex items-center justify-center min-h-screen overflow-hidden selection:bg-primary selection:text-white">
+<!-- Desktop Ambient Background -->
+<div class="absolute inset-0 z-0 opacity-40">
+<div class="w-full h-full bg-cover bg-center blur-xl scale-110" data-alt="Blurred abstract neon purple background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDIHUvyNzA4OSV76md8_SFcepEI313OTMddOgpkgEKTwBaWmXJ7e-xxwpr3xsjq_7HSY9sQelH-stqcQlCs_EFIBi_Ri_Yt4G592GGgxwhDtQO3-Nv-UE67cLM9RWKgwJl78s-gtwhjyR2w8syuimLstGP-xkWbl3kZscgc8Wo4NP7Cdi0fOi7J42RFN8ooWM99TzBtgcvPkNFdIMmGs1aJmVbyBJQvdJYMOeWrjBcQfAenddGgpCS737JFZws7gYZzRpLfL4keuww');">
+</div>
+</div>
+<!-- Phone Simulator Container -->
+<div class="relative z-10 w-full h-full max-w-[400px] max-h-[850px] aspect-[9/19] bg-background-dark shadow-2xl overflow-hidden sm:rounded-[3rem] sm:border-8 sm:border-[#2a2333] flex flex-col">
+<!-- Subtle Grid Background -->
+<div class="absolute inset-0 bg-grid-pattern bg-[length:40px_40px] opacity-20 pointer-events-none"></div>
+<!-- Top Gradient Overlay for Depth -->
+<div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col relative z-20 px-8 py-12">
+<!-- Game Title Section -->
+<div class="mt-12 mb-auto text-center flex flex-col items-center">
+<!-- Logo Icon -->
+<div class="mb-6 relative">
+<div class="absolute inset-0 bg-primary blur-xl opacity-40 rounded-full"></div>
+<span class="material-symbols-outlined text-6xl text-white relative z-10 drop-shadow-[0_0_10px_rgba(127,13,242,0.8)]">hub</span>
+</div>
+<h1 class="text-5xl font-bold leading-[0.9] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-primary-light to-primary drop-shadow-[0_0_15px_rgba(127,13,242,0.5)]">
+                    NEON<br/>PATH<br/>PUZZLE
+                </h1>
+<div class="h-1 w-16 bg-primary rounded-full mt-6 shadow-neon"></div>
+</div>
+<!-- Central Visual & Progress -->
+<div class="flex flex-col gap-8 w-full mb-12">
+<!-- Central Abstract Graphic (The "Path") -->
+<div class="aspect-square w-full max-w-[240px] mx-auto relative flex items-center justify-center">
+<!-- Glowing Outer Ring -->
+<div class="absolute inset-0 rounded-full border border-primary/30 shadow-[0_0_30px_rgba(127,13,242,0.2)]"></div>
+<!-- Inner Ring -->
+<div class="absolute inset-4 rounded-full border border-dashed border-primary/50 opacity-50"></div>
+<!-- Connection Visual -->
+<div class="relative w-full h-full p-8 flex items-center justify-center">
+<svg class="w-full h-full drop-shadow-[0_0_8px_#7f0df2]" viewbox="0 0 100 100">
+<path d="M50 20 L80 35 L80 65 L50 80 L20 65 L20 35 Z" fill="none" stroke="#a855f7" stroke-width="2"></path>
+<circle cx="50" cy="50" fill="#7f0df2" r="10"></circle>
+<circle class="fill-white" cx="20" cy="35" fill="#white" r="4"></circle>
+<line stroke="white" stroke-opacity="0.8" stroke-width="2" x1="20" x2="50" y1="35" y2="50"></line>
+<circle class="fill-white" cx="80" cy="65" fill="#white" r="4"></circle>
+<line stroke="white" stroke-opacity="0.8" stroke-width="2" x1="50" x2="80" y1="50" y2="65"></line>
+</svg>
+</div>
+</div>
+<!-- Progress Bar Section -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end px-1">
+<span class="text-primary-light text-xs font-bold tracking-widest uppercase">Initializing Grid...</span>
+<span class="text-white text-lg font-bold font-display tracking-wider drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">45%</span>
+</div>
+<div class="h-2 w-full bg-[#2a2136] rounded-full overflow-hidden relative border border-white/5">
+<!-- Progress Fill with Gradient and Glow -->
+<div class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-white w-[45%] rounded-full shadow-[0_0_15px_#7f0df2]"></div>
+</div>
+<div class="flex justify-between items-center text-[10px] text-white/40 font-mono mt-1">
+<span>ASSET_LOADER.SYS</span>
+<span>[WAITING]</span>
+</div>
+</div>
+</div>
+<!-- Footer: Tips & Meta -->
+<div class="mt-auto pt-6 border-t border-white/5">
+<div class="flex flex-col items-center text-center gap-3">
+<div class="flex items-center gap-2 text-primary-light/80">
+<span class="material-symbols-outlined text-lg">lightbulb</span>
+<span class="text-xs font-bold tracking-wider uppercase">Tip</span>
+</div>
+<p class="text-white/70 text-sm font-light leading-relaxed max-w-[280px]">
+                        Double tap on a locked node to reset its connections and clear the path.
+                    </p>
+<p class="text-[#4a4255] text-[10px] font-mono mt-4">v1.0.4 • BUILD 8921</p>
+</div>
+</div>
+</div>
+<!-- Bottom Gradient Overlay -->
+<div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent pointer-events-none z-0"></div>
+</div>
+</body></html>
