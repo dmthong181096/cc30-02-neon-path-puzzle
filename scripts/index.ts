@@ -1,6 +1,6 @@
 // Core Components
 export { GameDirector02 } from './Core/GameDirector02';
-export { GridManager02 } from './Core/GridManager02';
+export { BoardManager02 } from './Core/BoardManager02';
 export { PathManager02 } from './Core/PathManager02';
 export { NodeManager02 } from './Core/NodeManager02';
 export { LevelManager02 } from './Core/LevelManager02';

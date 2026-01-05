@@ -5,11 +5,22 @@ const { ccclass, property } = cc._decorator;
 @ccclass('GridCell02')
 export class GridCell02 extends cc.Component {
     
-    start() {
-        
+    @property({ displayName: "Background", type: cc.Sprite })
+    background: cc.Sprite = null;
+    
+    private row: number = 0;
+    private col: number = 0;
+    
+    initCell(row: number, col: number): void {
+        this.row = row;
+        this.col = col;
     }
     
-    update(deltaTime: number) {
-        
+    getRow(): number {
+        return this.row;
+    }
+    
+    getCol(): number {
+        return this.col;
     }
 }
