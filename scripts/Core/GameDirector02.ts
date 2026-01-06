@@ -212,16 +212,16 @@ export class GameDirector02 extends cc.Component {
     
     private onEmptyCellClicked(cell: GridCell02): void {
         if (this.isDrawingPath) {
-            // Check if cell is already occupied by another completed path
+            // Check if cell is already occupied by completed paths
             const cellKey = `${cell.getRow()},${cell.getCol()}`;
             if (this.occupiedCells.has(cellKey)) {
                 cc.log(`Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by completed path`);
                 return;
             }
             
-            // Check if cell is occupied by partial paths from OTHER pairs
-            if (this.isCellOccupiedByOtherPartialPath(cell)) {
-                cc.log(`Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by another pair's partial path`);
+            // Check if cell is occupied by ANY partial paths (cannot draw over any line)
+            if (this.isCellOccupiedByAnyPartialPath(cell)) {
+                cc.log(`Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by partial path - cannot draw over`);
                 return;
             }
             
@@ -327,16 +327,30 @@ export class GameDirector02 extends cc.Component {
         const cellKey = `${newCell.getRow()},${newCell.getCol()}`;
         const isOccupiedByCompletedPath = this.occupiedCells.has(cellKey);
         
-        // Check if cell is occupied by other partial paths (but allow own partial path)
-        const isOccupiedByOtherPartialPath = this.isCellOccupiedByOtherPartialPath(newCell);
-        const canOverwriteOwn = this.canOverwriteOwnPartialPath(newCell);
-        
-        const isBlocked = isOccupiedByOtherPartialPath && !canOverwriteOwn;
+        // Check if cell is occupied by ANY partial paths (including own)
+        const isOccupiedByAnyPartialPath = this.isCellOccupiedByAnyPartialPath(newCell);
         
         return isAdjacent && 
                !isAlreadyInCurrentPath && 
                !isOccupiedByCompletedPath && 
-               !isBlocked;
+               !isOccupiedByAnyPartialPath;
+    }
+    
+    private isCellOccupiedByAnyPartialPath(cell: GridCell02): boolean {
+        // Check ALL partial paths (including own pair)
+        for (const [pairNumber, partialPath] of this.partialPaths) {
+            // Check if current cell is in this partial path
+            const isInPartialPath = partialPath.some(pathCell => 
+                pathCell.getRow() === cell.getRow() && pathCell.getCol() === cell.getCol()
+            );
+            
+            if (isInPartialPath) {
+                cc.log(`🚫 Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by pair ${pairNumber}'s partial path - cannot draw over`);
+                return true; // Cell is occupied by any partial path
+            }
+        }
+        
+        return false; // Cell is not occupied by any partial paths
     }
     
     private drawPathSegment(): void {
