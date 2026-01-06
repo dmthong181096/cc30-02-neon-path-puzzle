@@ -4,7 +4,8 @@ import { NodeManager02 } from './NodeManager02';
 import { PathManager02 } from './PathManager02';
 import { LevelManager02 } from './LevelManager02';
 import { ResultManager02 } from './ResultManager02';
-import { GameWriter02, GameState, GameResultEvent } from './GameWriter02';
+import { GameWriter02 } from './GameWriter02';
+import { GameState02, GameResultEvent, CellPosition, NodeData } from '../Data/GameState02';
 import { GridCell02 } from '../UI/Components/GridCell02';
 import { NodeItem02 } from '../UI/Components/NodeItem02';
 
@@ -62,8 +63,8 @@ export class GameDirector02 extends cc.Component {
         this.levelManagerCmp = this.levelManager.getComponent(LevelManager02);
         this.resultManagerCmp = this.resultManager.getComponent(ResultManager02);
         
-        // Create GameWriter instance (pure class, not a component)
-        this.gameWriter = new GameWriter02(this.nodeManagerCmp);
+        // Create GameWriter instance (pure class)
+        this.gameWriter = new GameWriter02();
         
         cc.log('GameDirector02: BoardManager component:', this.boardManagerCmp ? 'Found' : 'Missing');
         cc.log('GameDirector02: NodeManager component:', this.nodeManagerCmp ? 'Found' : 'Missing');
@@ -122,15 +123,49 @@ export class GameDirector02 extends cc.Component {
         }, 0.1);
     }
     
-    // Get current game state for GameWriter
-    private getGameState(): GameState {
+    // Convert current state to GameState02 for GameWriter
+    private getGameState(): GameState02 {
+        // Convert nodes to NodeData
+        const allNodes: NodeData[] = this.nodeManagerCmp.getNodes().map(node => ({
+            pairNumber: node.getNodeNumber(),
+            row: node.getGridPosition().x,
+            col: node.getGridPosition().y
+        }));
+        
+        // Convert currentPath to CellPosition[]
+        const currentPath: CellPosition[] = this.currentPath.map(cell => ({
+            row: cell.getRow(),
+            col: cell.getCol()
+        }));
+        
+        // Convert completedPaths
+        const completedPaths = new Map<number, CellPosition[]>();
+        for (const [pairNumber, cells] of this.completedPaths) {
+            completedPaths.set(pairNumber, cells.map(cell => ({
+                row: cell.getRow(),
+                col: cell.getCol()
+            })));
+        }
+        
+        // Convert partialPaths
+        const partialPaths = new Map<number, CellPosition[]>();
+        for (const [pairNumber, cells] of this.partialPaths) {
+            partialPaths.set(pairNumber, cells.map(cell => ({
+                row: cell.getRow(),
+                col: cell.getCol()
+            })));
+        }
+        
         return {
+            gridSize: 8,
             isDrawingPath: this.isDrawingPath,
-            currentPath: this.currentPath,
-            completedPaths: this.completedPaths,
-            partialPaths: this.partialPaths,
+            currentPath: currentPath,
+            completedPaths: completedPaths,
+            partialPaths: partialPaths,
             occupiedCells: this.occupiedCells,
-            selectedStartNode: this.selectedStartNode
+            currentDrawingPairNumber: this.selectedStartNode ? this.selectedStartNode.getNodeNumber() : -1,
+            allNodes: allNodes,
+            totalPairs: this.nodeManagerCmp.getNumberOfPairs()
         };
     }
     

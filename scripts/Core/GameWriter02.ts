@@ -1,90 +1,55 @@
 import * as cc from 'cc';
-import { NodeManager02 } from './NodeManager02';
-import { NodeItem02 } from '../UI/Components/NodeItem02';
-import { GridCell02 } from '../UI/Components/GridCell02';
 import { EventEmitter02 } from '../Helper/EventEmitter02';
-
-export interface GameState {
-    isDrawingPath: boolean;
-    currentPath: GridCell02[];
-    completedPaths: Map<number, GridCell02[]>;
-    partialPaths: Map<number, GridCell02[]>;
-    occupiedCells: Set<string>;
-    selectedStartNode: NodeItem02 | null;
-}
-
-export enum GameResultEvent {
-    WIN = 'game-win',
-    LOSE = 'game-lose',
-    CONTINUE = 'game-continue'
-}
+import { GameState02, GameResultEvent, NodeData, CellPosition } from '../Data/GameState02';
 
 export class GameWriter02 extends EventEmitter02 {
     
-    private nodeManagerCmp: NodeManager02 = null;
-    private gridSize: number = 8;
-    
-    constructor(nodeManager: NodeManager02) {
+    constructor() {
         super();
-        this.nodeManagerCmp = nodeManager;
         cc.log('📝 GameWriter02: Initialized');
     }
     
-    checkGameResult(gameState: GameState): void {
+    checkGameResult(gameState: GameState02): void {
         cc.log(`📝 GameWriter02: Checking game result...`);
         
-        // Check win first
         if (this.checkWinCondition(gameState)) {
             cc.log(`🎉 GameWriter02: WIN detected!`);
             this.emit(GameResultEvent.WIN);
             return;
         }
         
-        // Check lose
         if (this.checkLoseCondition(gameState)) {
             cc.log(`💀 GameWriter02: LOSE detected!`);
             this.emit(GameResultEvent.LOSE);
             return;
         }
         
-        // Game continues
         cc.log(`✅ GameWriter02: Game continues...`);
         this.emit(GameResultEvent.CONTINUE);
     }
     
-    private checkWinCondition(gameState: GameState): boolean {
-        const totalPairs = this.nodeManagerCmp.getNumberOfPairs();
+    private checkWinCondition(gameState: GameState02): boolean {
         const completedCount = gameState.completedPaths.size;
-        
-        cc.log(`📝 GameWriter02: Win check - ${completedCount}/${totalPairs} pairs completed`);
-        
-        return completedCount === totalPairs;
+        cc.log(`📝 GameWriter02: Win check - ${completedCount}/${gameState.totalPairs} pairs completed`);
+        return completedCount === gameState.totalPairs;
     }
     
-    private checkLoseCondition(gameState: GameState): boolean {
+    private checkLoseCondition(gameState: GameState02): boolean {
         cc.log(`📝 GameWriter02: Checking lose condition...`);
         
-        const allPairs = this.nodeManagerCmp.getAllPairs();
-        const incompletePairs: { [pairNumber: number]: NodeItem02[] } = {};
+        const incompletePairs = this.getIncompletePairs(gameState);
         
-        for (const pairNumber in allPairs) {
-            const pairNum = parseInt(pairNumber);
-            if (!gameState.completedPaths.has(pairNum)) {
-                incompletePairs[pairNum] = allPairs[pairNum];
-            }
-        }
-        
-        const incompletePairCount = Object.keys(incompletePairs).length;
-        
-        if (incompletePairCount === 0) {
+        if (incompletePairs.length === 0) {
             return false;
         }
         
-        // Check if ALL incomplete pairs can still be connected
-        for (const pairNumber in incompletePairs) {
-            const nodes = incompletePairs[pairNumber];
-            if (nodes.length === 2) {
-                if (!this.canConnectNodes(nodes[0], nodes[1], gameState)) {
+        for (const pairNumber of incompletePairs) {
+            const pairNodes = gameState.allNodes.filter(n => n.pairNumber === pairNumber);
+            if (pairNodes.length === 2) {
+                const start: CellPosition = { row: pairNodes[0].row, col: pairNodes[0].col };
+                const end: CellPosition = { row: pairNodes[1].row, col: pairNodes[1].col };
+                
+                if (!this.canConnect(start, end, pairNumber, gameState)) {
                     cc.log(`❌ GameWriter02: Pair ${pairNumber} cannot be connected - LOSE!`);
                     return true;
                 }
@@ -94,42 +59,46 @@ export class GameWriter02 extends EventEmitter02 {
         return false;
     }
     
-    private canConnectNodes(startNode: NodeItem02, endNode: NodeItem02, gameState: GameState): boolean {
-        const startPos = startNode.getGridPosition();
-        const endPos = endNode.getGridPosition();
-        
-        const path = this.findPath(startPos, endPos, gameState);
+    private getIncompletePairs(gameState: GameState02): number[] {
+        const allPairNumbers = [...new Set(gameState.allNodes.map(n => n.pairNumber))];
+        return allPairNumbers.filter(p => !gameState.completedPaths.has(p));
+    }
+    
+    private canConnect(start: CellPosition, end: CellPosition, pairNumber: number, gameState: GameState02): boolean {
+        const path = this.findPath(start, end, pairNumber, gameState);
         return path !== null && path.length > 0;
     }
     
-    private findPath(start: cc.Vec2, end: cc.Vec2, gameState: GameState): cc.Vec2[] | null {
+    private findPath(start: CellPosition, end: CellPosition, pairNumber: number, gameState: GameState02): CellPosition[] | null {
         const visited = new Set<string>();
-        const queue: { pos: cc.Vec2, path: cc.Vec2[] }[] = [];
+        const queue: { pos: CellPosition, path: CellPosition[] }[] = [];
         
         queue.push({ pos: start, path: [start] });
-        visited.add(`${start.x},${start.y}`);
+        visited.add(`${start.row},${start.col}`);
         
         const directions = [
-            new cc.Vec2(0, 1),
-            new cc.Vec2(0, -1),
-            new cc.Vec2(1, 0),
-            new cc.Vec2(-1, 0)
+            { row: 0, col: 1 },
+            { row: 0, col: -1 },
+            { row: 1, col: 0 },
+            { row: -1, col: 0 }
         ];
         
         while (queue.length > 0) {
             const current = queue.shift();
-            const currentPos = current.pos;
             
-            if (currentPos.x === end.x && currentPos.y === end.y) {
+            if (current.pos.row === end.row && current.pos.col === end.col) {
                 return current.path;
             }
             
             for (const dir of directions) {
-                const newPos = new cc.Vec2(currentPos.x + dir.x, currentPos.y + dir.y);
-                const posKey = `${newPos.x},${newPos.y}`;
+                const newPos: CellPosition = {
+                    row: current.pos.row + dir.row,
+                    col: current.pos.col + dir.col
+                };
+                const posKey = `${newPos.row},${newPos.col}`;
                 
-                if (newPos.x < 0 || newPos.x >= this.gridSize || 
-                    newPos.y < 0 || newPos.y >= this.gridSize) {
+                if (newPos.row < 0 || newPos.row >= gameState.gridSize || 
+                    newPos.col < 0 || newPos.col >= gameState.gridSize) {
                     continue;
                 }
                 
@@ -137,7 +106,7 @@ export class GameWriter02 extends EventEmitter02 {
                     continue;
                 }
                 
-                if (this.isCellAvailable(newPos, start, end, gameState)) {
+                if (this.isCellAvailable(newPos, start, end, pairNumber, gameState)) {
                     visited.add(posKey);
                     queue.push({ pos: newPos, path: [...current.path, newPos] });
                 }
@@ -147,12 +116,12 @@ export class GameWriter02 extends EventEmitter02 {
         return null;
     }
     
-    private isCellAvailable(pos: cc.Vec2, startNode: cc.Vec2, endNode: cc.Vec2, gameState: GameState): boolean {
-        const cellKey = `${pos.x},${pos.y}`;
+    private isCellAvailable(pos: CellPosition, start: CellPosition, end: CellPosition, pairNumber: number, gameState: GameState02): boolean {
+        const cellKey = `${pos.row},${pos.col}`;
         
         // Allow start and end positions
-        if ((pos.x === startNode.x && pos.y === startNode.y) || 
-            (pos.x === endNode.x && pos.y === endNode.y)) {
+        if ((pos.row === start.row && pos.col === start.col) || 
+            (pos.row === end.row && pos.col === end.col)) {
             return true;
         }
         
@@ -161,54 +130,32 @@ export class GameWriter02 extends EventEmitter02 {
             return false;
         }
         
-        // Check current drawing path
+        // Check current drawing path (block for other pairs)
         if (gameState.isDrawingPath && gameState.currentPath.length > 0) {
-            const isInCurrentPath = gameState.currentPath.some(cell => 
-                cell.getRow() === pos.x && cell.getCol() === pos.y
+            const isInCurrentPath = gameState.currentPath.some(c => 
+                c.row === pos.row && c.col === pos.col
             );
-            
             if (isInCurrentPath) {
-                const currentNodeNumber = gameState.selectedStartNode ? 
-                    gameState.selectedStartNode.getNodeNumber() : -1;
-                const startNodeAtPos = this.nodeManagerCmp.getNodeAt(startNode.x, startNode.y);
-                const endNodeAtPos = this.nodeManagerCmp.getNodeAt(endNode.x, endNode.y);
-                
-                if (startNodeAtPos && endNodeAtPos && 
-                    (startNodeAtPos.getNodeNumber() === currentNodeNumber || 
-                     endNodeAtPos.getNodeNumber() === currentNodeNumber)) {
-                    return true;
-                }
-                return false;
+                return gameState.currentDrawingPairNumber === pairNumber;
             }
         }
         
-        // Check partial paths
-        for (const [pairNumber, partialPath] of gameState.partialPaths) {
-            const startNodeAtPos = this.nodeManagerCmp.getNodeAt(startNode.x, startNode.y);
-            const endNodeAtPos = this.nodeManagerCmp.getNodeAt(endNode.x, endNode.y);
+        // Check partial paths (block for other pairs)
+        for (const [partialPairNumber, partialPath] of gameState.partialPaths) {
+            if (partialPairNumber === pairNumber) continue;
             
-            if (startNodeAtPos && endNodeAtPos && 
-                (startNodeAtPos.getNodeNumber() === pairNumber || 
-                 endNodeAtPos.getNodeNumber() === pairNumber)) {
-                continue;
-            }
-            
-            const isInPartialPath = partialPath.some(cell => 
-                cell.getRow() === pos.x && cell.getCol() === pos.y
+            const isInPartialPath = partialPath.some(c => 
+                c.row === pos.row && c.col === pos.col
             );
-            
             if (isInPartialPath) {
                 return false;
             }
         }
         
-        // Check nodes
-        const nodeAtCell = this.nodeManagerCmp.getNodeAt(pos.x, pos.y);
+        // Check other nodes
+        const nodeAtCell = gameState.allNodes.find(n => n.row === pos.row && n.col === pos.col);
         if (nodeAtCell) {
-            const nodePos = nodeAtCell.getGridPosition();
-            const isTargetNode = (nodePos.x === startNode.x && nodePos.y === startNode.y) ||
-                               (nodePos.x === endNode.x && nodePos.y === endNode.y);
-            return isTargetNode;
+            return nodeAtCell.pairNumber === pairNumber;
         }
         
         return true;
