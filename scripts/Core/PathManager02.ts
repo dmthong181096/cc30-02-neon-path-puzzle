@@ -55,6 +55,13 @@ export class PathManager02 extends cc.Component {
         );
     }
     
+    clearCurrentPath(): void {
+        // Clear only the current drawing path, not completed paths
+        // This would need to track which lines belong to current path vs completed paths
+        // For now, we'll implement a simple version
+        cc.log('PathManager02: Clearing current path');
+    }
+    
     clearAllPaths(): void {
         if (this.pathContainer) {
             this.pathContainer.removeAllChildren();
