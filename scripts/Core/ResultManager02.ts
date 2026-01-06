@@ -109,21 +109,38 @@ export class ResultManager02 extends cc.Component {
     }
     
     private hideWinText(): void {
-        if (this.resultLabel && this.resultLabel.isValid) {
-            this.resultLabel.destroy();
-            this.resultLabel = null;
-        }
+        this.resultLabel.string = "";
     }
     
     showGameOverAnimation(onRestart?: () => void): void {
+        cc.log(`💀 ResultManager02: Starting game over animation`);
+        
+        // Reset callback flag
+        this.callbackExecuted = false;
+        
+        // Set up backup timer to ensure callback is called
+        if (onRestart) {
+            cc.log(`⏰ ResultManager02: Setting up backup timer for 4 seconds (game over)`);
+            this.scheduleOnce(() => {
+                if (!this.callbackExecuted) {
+                    cc.log(`🔄 ResultManager02: Backup timer triggered - calling onRestart`);
+                    this.callbackExecuted = true;
+                    onRestart();
+                } else {
+                    cc.log(`⚠️ ResultManager02: Backup timer skipped - callback already executed`);
+                }
+            }, 4.0); // Backup timer slightly longer than countdown
+        }
+        
         this.showGameOverText(onRestart);
     }
     
     private showGameOverText(onRestart?: () => void): void {
-        
+        cc.log(`💀 ResultManager02: Displaying game over text`);
         
         // Add label component
-        this.resultLabel.string = `💀 GAME OVER 💀\nRestarting in 3s...`;
+        this.resultLabel.string = `💀 GAME OVER 💀\nNo solution possible!\nRestarting in 3s...`;
+        cc.log(`📄 ResultManager02: Game over text set to: "${this.resultLabel.string}"`);
 
         
         // Position at center of container
@@ -135,6 +152,7 @@ export class ResultManager02 extends cc.Component {
             .to(0.5, { scale: cc.v3(1.0, 1.0, 1.0) }, { easing: 'backOut' });
         
         scaleUp.start();
+        cc.log(`🎬 ResultManager02: Game over scale animation started`);
         
         // Countdown for restart
         this.startRestartCountdown(this.resultLabel, onRestart);
@@ -143,24 +161,46 @@ export class ResultManager02 extends cc.Component {
         this.scheduleOnce(() => {
             this.hideWinText();
         }, 3.0);
+        cc.log(`⏰ ResultManager02: Scheduled game over text removal in 3 seconds`);
     }
     
     private startRestartCountdown(label: cc.Label, onRestart?: () => void): void {
         let countdown = 3;
+        cc.log(`⏱️ ResultManager02: Starting 3-second restart countdown`);
         
         const updateCountdown = () => {
+            cc.log(`⏰ ResultManager02: Restart countdown update called - countdown: ${countdown}`);
+            
             if (label && label.isValid) {
-                label.string = `💀 GAME OVER 💀\nRestarting in ${countdown}s...`;
-                countdown--;
-                
-                if (countdown >= 0) {
+                if (countdown > 0) {
+                    label.string = `💀 GAME OVER 💀\nNo solution possible!\nRestarting in ${countdown}s...`;
+                    cc.log(`⏰ ResultManager02: Restart countdown ${countdown}s remaining`);
+                    countdown--;
+                    
+                    // Schedule next countdown update
                     this.scheduleOnce(updateCountdown, 1.0);
-                } else if (onRestart) {
-                    onRestart();
+                } else {
+                    // Countdown finished
+                    label.string = `💀 GAME OVER 💀\nRestarting game...`;
+                    cc.log(`🔄 ResultManager02: Restart countdown finished!`);
+                    
+                    // Call onRestart callback with flag check
+                    if (!this.callbackExecuted && onRestart) {
+                        cc.log(`📞 ResultManager02: Executing onRestart callback`);
+                        this.callbackExecuted = true;
+                        onRestart();
+                    } else if (this.callbackExecuted) {
+                        cc.log(`⚠️ ResultManager02: Restart callback already executed, skipping`);
+                    } else {
+                        cc.warn(`⚠️ ResultManager02: No onRestart callback provided!`);
+                    }
                 }
+            } else {
+                cc.error(`❌ ResultManager02: Label is invalid during restart countdown!`);
             }
         };
         
+        // Start the first countdown update after 1 second
         this.scheduleOnce(updateCountdown, 1.0);
     }
     

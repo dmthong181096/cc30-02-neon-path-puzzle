@@ -89,8 +89,9 @@ export class GameDirector02 extends cc.Component {
     
     private stopCurrentPath(): void {
         if (this.isDrawingPath && this.currentPath.length > 1) {
-            // Save as partial path
-            this.savePartialPath();
+            // Save as partial path without clearing others
+            cc.log(`⏹️ User stopped path - saving as partial path`);
+            this.savePartialPathWithoutClear();
             cc.log('Path stopped by user - saved as partial path');
         } else {
             // Cancel if too short
@@ -106,6 +107,11 @@ export class GameDirector02 extends cc.Component {
         this.clearCurrentPathHighlights();
         this.currentPath = [];
         cc.log('Current path cancelled');
+        
+        // Check lose condition after cancelling path
+        this.scheduleOnce(() => {
+            this.checkLoseCondition();
+        }, 0.1);
     }
 
     initUI() {
@@ -171,15 +177,24 @@ export class GameDirector02 extends cc.Component {
                 }
             } else {
                 // Different node clicked - save current partial path and start new one
-                cc.log('Saving partial path and starting new path from different node');
-                this.savePartialPath();
+                cc.log(`🔄 Switching from node ${this.selectedStartNode.getNodeNumber()} to node ${node.getNodeNumber()}`);
+                
+                // Save current path as partial (if it has content)
+                if (this.currentPath.length > 1) {
+                    cc.log(`💾 Saving partial path for node ${this.selectedStartNode.getNodeNumber()}`);
+                    this.savePartialPathWithoutClear();
+                } else {
+                    // Just cancel current path if too short
+                    cc.log(`❌ Cancelling short path for node ${this.selectedStartNode.getNodeNumber()}`);
+                    this.cancelCurrentPath();
+                }
                 
                 // Start new path from this node
                 this.selectedStartNode = node;
                 this.isDrawingPath = true;
                 this.currentPath = [cell];
                 cell.setSelected(true);
-                cc.log(`Started new path from node ${node.getNodeNumber()}`);
+                cc.log(`✅ Started new path from node ${node.getNodeNumber()}`);
             }
         }
     }
@@ -200,7 +215,13 @@ export class GameDirector02 extends cc.Component {
             // Check if cell is already occupied by another completed path
             const cellKey = `${cell.getRow()},${cell.getCol()}`;
             if (this.occupiedCells.has(cellKey)) {
-                cc.log(`Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by another path`);
+                cc.log(`Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by completed path`);
+                return;
+            }
+            
+            // Check if cell is occupied by partial paths from OTHER pairs
+            if (this.isCellOccupiedByOtherPartialPath(cell)) {
+                cc.log(`Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by another pair's partial path`);
                 return;
             }
             
@@ -208,8 +229,9 @@ export class GameDirector02 extends cc.Component {
             if (this.currentPath.length > 1) {
                 const lastCell = this.currentPath[this.currentPath.length - 1];
                 if (lastCell.getRow() === cell.getRow() && lastCell.getCol() === cell.getCol()) {
-                    // Double click on last cell - stop path
-                    this.stopCurrentPath();
+                    // Double click on last cell - stop path without clearing others
+                    cc.log(`🔄 Double-click detected on last cell - stopping path`);
+                    this.savePartialPathWithoutClear();
                     return;
                 }
             }
@@ -227,6 +249,49 @@ export class GameDirector02 extends cc.Component {
             // Not drawing - check if clicking on a partial path to continue
             this.checkContinuePartialPath(cell);
         }
+    }
+    
+    private isCellOccupiedByOtherPartialPath(cell: GridCell02): boolean {
+        const currentNodeNumber = this.selectedStartNode ? this.selectedStartNode.getNodeNumber() : -1;
+        
+        // Check all partial paths
+        for (const [pairNumber, partialPath] of this.partialPaths) {
+            // Skip checking partial path of the same pair we're currently drawing
+            if (pairNumber === currentNodeNumber) {
+                continue;
+            }
+            
+            // Check if current cell is in this partial path
+            const isInPartialPath = partialPath.some(pathCell => 
+                pathCell.getRow() === cell.getRow() && pathCell.getCol() === cell.getCol()
+            );
+            
+            if (isInPartialPath) {
+                cc.log(`🚫 Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by pair ${pairNumber}'s partial path`);
+                return true; // Cell is occupied by another pair's partial path
+            }
+        }
+        
+        return false; // Cell is not occupied by other partial paths
+    }
+    
+    private canOverwriteOwnPartialPath(cell: GridCell02): boolean {
+        const currentNodeNumber = this.selectedStartNode ? this.selectedStartNode.getNodeNumber() : -1;
+        
+        // Check if this cell is in our own partial path
+        const ownPartialPath = this.partialPaths.get(currentNodeNumber);
+        if (ownPartialPath) {
+            const isInOwnPartialPath = ownPartialPath.some(pathCell => 
+                pathCell.getRow() === cell.getRow() && pathCell.getCol() === cell.getCol()
+            );
+            
+            if (isInOwnPartialPath) {
+                cc.log(`✅ Cell (${cell.getRow()}, ${cell.getCol()}) is in our own partial path - can overwrite`);
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private checkContinuePartialPath(cell: GridCell02): void {
@@ -253,12 +318,25 @@ export class GameDirector02 extends cc.Component {
         // Only allow adjacent moves (not diagonal)
         const isAdjacent = (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
         
-        // Check if cell is already in path
-        const isAlreadyInPath = this.currentPath.some(cell => 
+        // Check if cell is already in current path
+        const isAlreadyInCurrentPath = this.currentPath.some(cell => 
             cell.getRow() === newCell.getRow() && cell.getCol() === newCell.getCol()
         );
         
-        return isAdjacent && !isAlreadyInPath;
+        // Check if cell is occupied by completed paths
+        const cellKey = `${newCell.getRow()},${newCell.getCol()}`;
+        const isOccupiedByCompletedPath = this.occupiedCells.has(cellKey);
+        
+        // Check if cell is occupied by other partial paths (but allow own partial path)
+        const isOccupiedByOtherPartialPath = this.isCellOccupiedByOtherPartialPath(newCell);
+        const canOverwriteOwn = this.canOverwriteOwnPartialPath(newCell);
+        
+        const isBlocked = isOccupiedByOtherPartialPath && !canOverwriteOwn;
+        
+        return isAdjacent && 
+               !isAlreadyInCurrentPath && 
+               !isOccupiedByCompletedPath && 
+               !isBlocked;
     }
     
     private drawPathSegment(): void {
@@ -314,8 +392,13 @@ export class GameDirector02 extends cc.Component {
         if (this.currentPath.length > 1 && this.selectedStartNode) {
             const nodeNumber = this.selectedStartNode.getNodeNumber();
             
-            // Clear any existing partial path for this node
-            this.clearPartialPath(nodeNumber);
+            // DON'T clear existing partial path - keep all partial paths
+            // Only clear if we're overwriting the same node's partial path
+            const existingPartialPath = this.partialPaths.get(nodeNumber);
+            if (existingPartialPath) {
+                cc.log(`Overwriting existing partial path for node ${nodeNumber}`);
+                this.clearPartialPath(nodeNumber);
+            }
             
             // Save current path as partial
             this.partialPaths.set(nodeNumber, [...this.currentPath]);
@@ -324,6 +407,34 @@ export class GameDirector02 extends cc.Component {
             this.pathManagerCmp.savePartialPathForNode(nodeNumber);
             
             cc.log(`Saved partial path for node ${nodeNumber} with ${this.currentPath.length} cells`);
+        }
+        
+        // Reset current drawing state
+        this.isDrawingPath = false;
+        this.selectedStartNode = null;
+        this.clearCurrentPathHighlights();
+        this.currentPath = [];
+        
+        // Check lose condition after saving partial path
+        this.scheduleOnce(() => {
+            this.checkLoseCondition();
+        }, 0.1);
+    }
+    
+    private savePartialPathWithoutClear(): void {
+        if (this.currentPath.length > 1 && this.selectedStartNode) {
+            const nodeNumber = this.selectedStartNode.getNodeNumber();
+            
+            // NEVER clear existing partial paths - just add new one
+            cc.log(`💾 Saving partial path for node ${nodeNumber} (keeping all other partial paths)`);
+            
+            // Save current path as partial
+            this.partialPaths.set(nodeNumber, [...this.currentPath]);
+            
+            // Keep the lines visible but mark them as partial
+            this.pathManagerCmp.savePartialPathForNode(nodeNumber);
+            
+            cc.log(`✅ Saved partial path for node ${nodeNumber} with ${this.currentPath.length} cells`);
         }
         
         // Reset current drawing state
@@ -402,7 +513,178 @@ export class GameDirector02 extends cc.Component {
             this.isGameWon = true;
             cc.log(`🎉 Level ${currentLevel} completed! Starting win animation...`);
             this.playWinAnimation();
+        } else {
+            // Check if game is still solvable
+            this.checkLoseCondition();
         }
+    }
+    
+    private checkLoseCondition(): void {
+        cc.log(`🔍 GameDirector02: Checking lose condition...`);
+        
+        // Get all incomplete pairs
+        const allPairs = this.nodeManagerCmp.getAllPairs();
+        const incompletePairs: { [pairNumber: number]: NodeItem02[] } = {};
+        
+        // Find incomplete pairs
+        for (const pairNumber in allPairs) {
+            const pairNum = parseInt(pairNumber);
+            if (!this.completedPaths.has(pairNum)) {
+                incompletePairs[pairNum] = allPairs[pairNum];
+            }
+        }
+        
+        const incompletePairCount = Object.keys(incompletePairs).length;
+        cc.log(`🔍 GameDirector02: Found ${incompletePairCount} incomplete pairs`);
+        
+        // Check if any incomplete pair can still be connected
+        let canSolve = false;
+        for (const pairNumber in incompletePairs) {
+            const nodes = incompletePairs[pairNumber];
+            if (nodes.length === 2) {
+                const startNode = nodes[0];
+                const endNode = nodes[1];
+                
+                if (this.canConnectNodes(startNode, endNode)) {
+                    canSolve = true;
+                    cc.log(`✅ GameDirector02: Pair ${pairNumber} can still be connected`);
+                    break;
+                } else {
+                    cc.log(`❌ GameDirector02: Pair ${pairNumber} cannot be connected`);
+                }
+            }
+        }
+        
+        if (!canSolve && incompletePairCount > 0) {
+            cc.log(`💀 GameDirector02: No solution possible - GAME OVER!`);
+            this.triggerGameOver();
+        } else {
+            cc.log(`✅ GameDirector02: Game is still solvable`);
+        }
+    }
+    
+    private canConnectNodes(startNode: NodeItem02, endNode: NodeItem02): boolean {
+        const startPos = startNode.getGridPosition();
+        const endPos = endNode.getGridPosition();
+        
+        cc.log(`🔍 Checking path from (${startPos.x}, ${startPos.y}) to (${endPos.x}, ${endPos.y})`);
+        
+        // Use A* pathfinding to check if path exists
+        const path = this.findPath(startPos, endPos);
+        const canConnect = path !== null && path.length > 0;
+        
+        cc.log(`🔍 Path ${canConnect ? 'found' : 'not found'} - length: ${path ? path.length : 0}`);
+        return canConnect;
+    }
+    
+    private findPath(start: cc.Vec2, end: cc.Vec2): cc.Vec2[] | null {
+        const gridSize = 8;
+        const visited = new Set<string>();
+        const queue: { pos: cc.Vec2, path: cc.Vec2[] }[] = [];
+        
+        // Start pathfinding
+        queue.push({ pos: start, path: [start] });
+        visited.add(`${start.x},${start.y}`);
+        
+        const directions = [
+            new cc.Vec2(0, 1),  // up
+            new cc.Vec2(0, -1), // down
+            new cc.Vec2(1, 0),  // right
+            new cc.Vec2(-1, 0)  // left
+        ];
+        
+        while (queue.length > 0) {
+            const current = queue.shift();
+            const currentPos = current.pos;
+            
+            // Check if we reached the destination
+            if (currentPos.x === end.x && currentPos.y === end.y) {
+                return current.path;
+            }
+            
+            // Explore neighbors
+            for (const dir of directions) {
+                const newPos = new cc.Vec2(currentPos.x + dir.x, currentPos.y + dir.y);
+                const posKey = `${newPos.x},${newPos.y}`;
+                
+                // Check bounds
+                if (newPos.x < 0 || newPos.x >= gridSize || newPos.y < 0 || newPos.y >= gridSize) {
+                    continue;
+                }
+                
+                // Skip if already visited
+                if (visited.has(posKey)) {
+                    continue;
+                }
+                
+                // Check if cell is available
+                if (this.isCellAvailable(newPos, start, end)) {
+                    visited.add(posKey);
+                    const newPath = [...current.path, newPos];
+                    queue.push({ pos: newPos, path: newPath });
+                }
+            }
+        }
+        
+        return null; // No path found
+    }
+    
+    private isCellAvailable(pos: cc.Vec2, startNode: cc.Vec2, endNode: cc.Vec2): boolean {
+        const cellKey = `${pos.x},${pos.y}`;
+        
+        // Allow start and end positions
+        if ((pos.x === startNode.x && pos.y === startNode.y) || 
+            (pos.x === endNode.x && pos.y === endNode.y)) {
+            return true;
+        }
+        
+        // Check if cell is occupied by completed paths
+        if (this.occupiedCells.has(cellKey)) {
+            return false;
+        }
+        
+        // Check if cell is occupied by partial paths (except for the path we're trying to connect)
+        for (const [pairNumber, partialPath] of this.partialPaths) {
+            // Skip checking partial path of the same pair we're trying to connect
+            const startNodeAtPos = this.nodeManagerCmp.getNodeAt(startNode.x, startNode.y);
+            const endNodeAtPos = this.nodeManagerCmp.getNodeAt(endNode.x, endNode.y);
+            
+            if (startNodeAtPos && endNodeAtPos && 
+                (startNodeAtPos.getNodeNumber() === pairNumber || endNodeAtPos.getNodeNumber() === pairNumber)) {
+                continue; // Skip this partial path as it belongs to the pair we're checking
+            }
+            
+            // Check if current position is in this partial path
+            const isInPartialPath = partialPath.some(cell => 
+                cell.getRow() === pos.x && cell.getCol() === pos.y
+            );
+            
+            if (isInPartialPath) {
+                return false; // Cell is occupied by another pair's partial path
+            }
+        }
+        
+        // Check if cell has a node from a different pair
+        const nodeAtCell = this.nodeManagerCmp.getNodeAt(pos.x, pos.y);
+        if (nodeAtCell) {
+            // Only allow if it's one of our target nodes
+            const nodePos = nodeAtCell.getGridPosition();
+            const isTargetNode = (nodePos.x === startNode.x && nodePos.y === startNode.y) ||
+                               (nodePos.x === endNode.x && nodePos.y === endNode.y);
+            return isTargetNode;
+        }
+        
+        return true; // Cell is free
+    }
+    
+    private triggerGameOver(): void {
+        cc.log(`💀 GameDirector02: GAME OVER - No solution possible!`);
+        
+        // Show game over animation
+        this.resultManagerCmp.showGameOverAnimation(() => {
+            cc.log(`🔄 GameDirector02: Restarting game after game over...`);
+            this.restartGame();
+        });
     }
     
     private onLevelChanged(newLevel: number): void {

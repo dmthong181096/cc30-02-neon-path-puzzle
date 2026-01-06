@@ -108,6 +108,7 @@ export class PathManager02 extends cc.Component {
         // Clear all paths
         this.clearCurrentPath();
         
+        // Clear completed paths
         this.completedPathLines.forEach((pathLines, nodeNumber) => {
             pathLines.forEach(line => {
                 if (line && line.node) {
@@ -117,11 +118,21 @@ export class PathManager02 extends cc.Component {
         });
         this.completedPathLines.clear();
         
+        // Clear partial paths
+        this.partialPathLines.forEach((pathLines, nodeNumber) => {
+            pathLines.forEach(line => {
+                if (line && line.node) {
+                    line.node.destroy();
+                }
+            });
+        });
+        this.partialPathLines.clear();
+        
         if (this.pathContainer) {
             this.pathContainer.removeAllChildren();
         }
         
-        cc.log('PathManager02: Cleared all paths');
+        cc.log('PathManager02: Cleared all paths (current, completed, and partial)');
     }
     
     private worldToLocal(worldPos: cc.Vec2): cc.Vec2 {
