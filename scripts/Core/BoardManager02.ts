@@ -72,9 +72,26 @@ export class BoardManager02 extends cc.Component {
                 if (cellComponent) {
                     cellComponent.initCell(row, col);
                     this.cells[row][col] = cellComponent;
+                    
+                    // Forward cell click events to this BoardManager
+                    cellNode.on('cell-clicked', this.onCellClicked, this);
                 }
             }
         }
+    }
+    
+    private onCellClicked(cell: GridCell02): void {
+        this.node.emit('cell-clicked', cell);
+    }
+    
+    resetAllHighlights(): void {
+        this.cells.forEach(row => {
+            row.forEach(cell => {
+                if (cell && !cell.isSelected()) {
+                    cell.resetHighlight();
+                }
+            });
+        });
     }
     
     getCellAt(row: number, col: number): GridCell02 | null {
@@ -86,5 +103,15 @@ export class BoardManager02 extends cc.Component {
     
     getAllCells(): GridCell02[][] {
         return this.cells;
+    }
+    
+    onDestroy(): void {
+        this.cells.forEach(row => {
+            row.forEach(cell => {
+                if (cell && cell.node) {
+                    cell.node.off('cell-clicked', this.onCellClicked, this);
+                }
+            });
+        });
     }
 }

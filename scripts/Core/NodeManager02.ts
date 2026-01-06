@@ -1,11 +1,10 @@
 import * as cc from 'cc';
-import { Declaration } from '../Declaration02';
 import { GridCell02 } from '../UI/Components/GridCell02';
 import { NodeItem02 } from '../UI/Components/NodeItem02';
 import { Subscriber02 } from '../Helper/Subscriber02';
+import { BoardManager02 } from './BoardManager02';
 
 const { ccclass, property } = cc._decorator;
-const { BaseSubscriber } = Declaration;
 
 @ccclass('NodeManager02')
 export class NodeManager02 extends Subscriber02 {
@@ -25,25 +24,40 @@ export class NodeManager02 extends Subscriber02 {
     }
     
     generateRandomNodes(): void {
+        cc.log('NodeManager02: generateRandomNodes() called');
+        
         if (!this.nodePrefab || !this.boardManager) {
             cc.error('NodeManager02: Missing nodePrefab or boardManager');
+            cc.log('NodeManager02: nodePrefab:', this.nodePrefab ? 'Available' : 'Missing');
+            cc.log('NodeManager02: boardManager:', this.boardManager ? 'Available' : 'Missing');
             return;
         }
         
         // Random number of pairs between minPairs and maxPairs
         this.numberOfPairs = this.getRandomPairCount();
+        cc.log(`NodeManager02: Will generate ${this.numberOfPairs} pairs`);
         
         this.clearNodes();
         this.generateNodePairs();
         
         cc.log(`NodeManager02: Generated ${this.numberOfPairs} pairs (${this.numberOfPairs * 2} nodes total)`);
+        cc.log(`NodeManager02: Actual nodes created: ${this.nodes.length}`);
     }
     
     private getRandomPairCount(): number {
         // Random between minPairs and maxPairs (inclusive)
-        const {MAX_NODE_PAIR, MIN_NODE_PAIR} = this.getConfig().getMinMaxNodePair();
-        const randomPairs = Math.floor(Math.random() * (MAX_NODE_PAIR - MIN_NODE_PAIR + 1)) + MIN_NODE_PAIR;
-        return randomPairs;
+        try {
+            const {MAX_NODE_PAIR, MIN_NODE_PAIR} = this.getConfig().getMinMaxNodePair();
+            const randomPairs = Math.floor(Math.random() * (MAX_NODE_PAIR - MIN_NODE_PAIR + 1)) + MIN_NODE_PAIR;
+            cc.log(`NodeManager02: Random pair count: ${randomPairs} (min: ${MIN_NODE_PAIR}, max: ${MAX_NODE_PAIR})`);
+            return randomPairs;
+        } catch (error) {
+            cc.error('NodeManager02: Error getting random pair count:', error);
+            // Fallback to default values
+            const defaultPairs = 4;
+            cc.log(`NodeManager02: Using fallback pair count: ${defaultPairs}`);
+            return defaultPairs;
+        }
     }
     
     private clearNodes(): void {
@@ -107,7 +121,7 @@ export class NodeManager02 extends Subscriber02 {
     
     private getUniqueColor(usedColors: number[]): number {
         const availableColors = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-        const unusedColors = availableColors.filter(color => !usedColors.includes(color));
+        const unusedColors = availableColors.filter(color => usedColors.indexOf(color) === -1);
         
         if (unusedColors.length === 0) {
             // If all colors used, start reusing (shouldn't happen with max 6 pairs and 9 colors)
@@ -121,7 +135,7 @@ export class NodeManager02 extends Subscriber02 {
     }
     
     private createNodePair(pairNumber: number, positions: cc.Vec2[], colorId: number): void {
-        const boardManagerComponent = this.boardManager.getComponent('BoardManager02');
+        const boardManagerComponent = this.boardManager.getComponent(BoardManager02);
         if (!boardManagerComponent) {
             cc.error('NodeManager02: BoardManager02 component not found');
             return;
@@ -138,8 +152,17 @@ export class NodeManager02 extends Subscriber02 {
     }
     
     private createNodeAtCell(cell: GridCell02, pairNumber: number, color: cc.Color, nodeIndex: number): void {
+        cc.log(`NodeManager02: Creating node ${pairNumber}-${nodeIndex} at cell (${cell.getRow()}, ${cell.getCol()})`);
+        
+        if (!this.nodePrefab) {
+            cc.error('NodeManager02: nodePrefab is null!');
+            return;
+        }
+        
         const nodeInstance = cc.instantiate(this.nodePrefab);
         cell.node.addChild(nodeInstance);
+        
+        cc.log(`NodeManager02: Node instance created:`, nodeInstance.name);
         
         const nodeComponent = nodeInstance.getComponent(NodeItem02);
         if (nodeComponent) {
@@ -147,6 +170,9 @@ export class NodeManager02 extends Subscriber02 {
             this.nodes.push(nodeComponent);
             
             cc.log(`NodeManager02: Created node ${pairNumber}-${nodeIndex} at (${cell.getRow()}, ${cell.getCol()})`);
+            cc.log(`NodeManager02: Total nodes in array: ${this.nodes.length}`);
+        } else {
+            cc.error(`NodeManager02: NodeItem02 component not found on prefab!`);
         }
     }
     
