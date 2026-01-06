@@ -103,6 +103,56 @@ export class PathLine02 extends cc.Component {
         }
     }
     
+    setPartial(isPartial: boolean): void {
+        if (isPartial) {
+            // Make partial path lines dimmer
+            const dimmerColor = new cc.Color(this.lineColor);
+            dimmerColor.a = 150; // More transparent
+            this.lineColor = dimmerColor;
+            this.updateLine();
+        }
+    }
+    
+    playWinFlash(): void {
+        // Create a bright flash effect for win animation
+        const originalColor = new cc.Color(this.lineColor);
+        
+        // Flash sequence: bright white -> original -> bright -> original
+        const flashTween = cc.tween(this)
+            .call(() => {
+                this.lineColor = cc.Color.WHITE;
+                this.updateLine();
+            })
+            .delay(0.1)
+            .call(() => {
+                this.lineColor = originalColor;
+                this.updateLine();
+            })
+            .delay(0.1)
+            .call(() => {
+                this.lineColor = cc.Color.WHITE;
+                this.updateLine();
+            })
+            .delay(0.1)
+            .call(() => {
+                this.lineColor = originalColor;
+                this.updateLine();
+            })
+            .delay(0.2)
+            .call(() => {
+                // Final bright glow
+                const brightColor = new cc.Color(originalColor);
+                brightColor.r = Math.min(255, brightColor.r + 50);
+                brightColor.g = Math.min(255, brightColor.g + 50);
+                brightColor.b = Math.min(255, brightColor.b + 50);
+                this.lineColor = brightColor;
+                this.hasGlow = true;
+                this.updateLine();
+            });
+        
+        flashTween.start();
+    }
+    
     getIsCompleted(): boolean {
         return this.isCompleted;
     }

@@ -20,7 +20,7 @@ export class Config02 extends BaseConfig {
                 8: cc.color("#00ffcc"),
                 9: cc.color("#e6ff00"),
             },
-            MAX_NODE_PAIR: 9,
+            MAX_NODE_PAIR: 1,
             MIN_NODE_PAIR: 2,
         }
         return this.config;

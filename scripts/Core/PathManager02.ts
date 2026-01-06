@@ -14,6 +14,7 @@ export class PathManager02 extends cc.Component {
     
     private currentPathLines: PathLine02[] = []; // Lines for current drawing path
     private completedPathLines: Map<number, PathLine02[]> = new Map(); // Lines for completed paths by node number
+    private partialPathLines: Map<number, PathLine02[]> = new Map(); // Lines for partial paths by node number
     
     drawDirectLineWorld(fromWorld: cc.Vec2, toWorld: cc.Vec2, color: cc.Color, isCompleted: boolean = false): PathLine02 | null {
         if (!this.pathLinePrefab || !this.pathContainer) {
@@ -74,17 +75,32 @@ export class PathManager02 extends cc.Component {
         cc.log('PathManager02: Cleared current path');
     }
     
-    clearPathForNode(nodeNumber: number): void {
-        // Clear specific completed path
-        const pathLines = this.completedPathLines.get(nodeNumber);
+    savePartialPathForNode(nodeNumber: number): void {
+        // Move current path lines to partial paths
+        if (this.currentPathLines.length > 0) {
+            this.partialPathLines.set(nodeNumber, [...this.currentPathLines]);
+            
+            // Make partial path lines slightly dimmer
+            this.currentPathLines.forEach(line => {
+                line.setPartial(true);
+            });
+            
+            this.currentPathLines = [];
+            cc.log(`PathManager02: Saved partial path for node ${nodeNumber}`);
+        }
+    }
+    
+    clearPartialPathForNode(nodeNumber: number): void {
+        // Clear specific partial path
+        const pathLines = this.partialPathLines.get(nodeNumber);
         if (pathLines) {
             pathLines.forEach(line => {
                 if (line && line.node) {
                     line.node.destroy();
                 }
             });
-            this.completedPathLines.delete(nodeNumber);
-            cc.log(`PathManager02: Cleared path for node ${nodeNumber}`);
+            this.partialPathLines.delete(nodeNumber);
+            cc.log(`PathManager02: Cleared partial path for node ${nodeNumber}`);
         }
     }
     
@@ -114,6 +130,10 @@ export class PathManager02 extends cc.Component {
             worldPos.x - containerWorldPos.x,
             worldPos.y - containerWorldPos.y
         );
+    }
+    
+    getCompletedPathLines(nodeNumber: number): PathLine02[] | null {
+        return this.completedPathLines.get(nodeNumber) || null;
     }
     
     getCompletedPathsCount(): number {
