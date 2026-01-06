@@ -1,11 +1,11 @@
 import * as cc from 'cc';
 import { Declaration } from '../Declaration02';
-const {BaseConfig} = Declaration;
+const { BaseConfig } = Declaration;
 const { ccclass, property } = cc._decorator;
 
 @ccclass('Config02')
 export class Config02 extends BaseConfig {
-    
+
 
     defineConfig() {
         this.config = {
@@ -27,13 +27,13 @@ export class Config02 extends BaseConfig {
     }
 
     getColorNode(index: number) {
-        if(!this.config){
+        if (!this.config) {
             this.defineConfig();
         }
         return this.config.COLOR_NODE[index];
     }
     getMinMaxNodePair() {
-        if(!this.config){
+        if (!this.config) {
             this.defineConfig();
         }
         return {

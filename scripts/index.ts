@@ -4,6 +4,7 @@ export { BoardManager02 } from './Core/BoardManager02';
 export { PathManager02 } from './Core/PathManager02';
 export { NodeManager02 } from './Core/NodeManager02';
 export { LevelManager02 } from './Core/LevelManager02';
+export { ResultManager02 } from './Core/ResultManager02';
 
 // Helper Components
 export { Config02 } from './Helper/Config02';

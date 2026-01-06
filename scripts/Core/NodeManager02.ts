@@ -212,4 +212,23 @@ export class NodeManager02 extends Subscriber02 {
             }
         });
     }
+    
+    clearAllNodes(): void {
+        cc.log('NodeManager02: Clearing all existing nodes...');
+        
+        // Destroy all existing node instances
+        this.nodes.forEach(node => {
+            if (node && node.node && node.node.isValid) {
+                cc.log(`NodeManager02: Destroying node ${node.getNodeNumber()} at (${node.getGridPosition().x}, ${node.getGridPosition().y})`);
+                node.node.destroy();
+            }
+        });
+        
+        // Clear arrays
+        this.nodes = [];
+        this.occupiedCells = [];
+        this.numberOfPairs = 0;
+        
+        cc.log(`NodeManager02: All nodes cleared. Nodes array length: ${this.nodes.length}`);
+    }
 }

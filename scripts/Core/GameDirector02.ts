@@ -2,6 +2,8 @@ import * as cc from 'cc';
 import { BoardManager02 } from './BoardManager02';
 import { NodeManager02 } from './NodeManager02';
 import { PathManager02 } from './PathManager02';
+import { LevelManager02 } from './LevelManager02';
+import { ResultManager02 } from './ResultManager02';
 import { GridCell02 } from '../UI/Components/GridCell02';
 import { NodeItem02 } from '../UI/Components/NodeItem02';
 
@@ -18,10 +20,18 @@ export class GameDirector02 extends cc.Component {
     
     @property({displayName: "Path Manager", type: cc.Node})
     pathManager: cc.Node = null;
+    
+    @property({displayName: "Level Manager", type: cc.Node})
+    levelManager: cc.Node = null;
+    
+    @property({displayName: "Result Manager", type: cc.Node})
+    resultManager: cc.Node = null;
 
     protected boardManagerCmp: BoardManager02 = null;
     protected nodeManagerCmp: NodeManager02 = null;
     protected pathManagerCmp: PathManager02 = null;
+    protected levelManagerCmp: LevelManager02 = null;
+    protected resultManagerCmp: ResultManager02 = null;
     
     private selectedStartNode: NodeItem02 = null;
     private isDrawingPath: boolean = false;
@@ -29,9 +39,7 @@ export class GameDirector02 extends cc.Component {
     private completedPaths: Map<number, GridCell02[]> = new Map(); // Store completed paths by node number
     private partialPaths: Map<number, GridCell02[]> = new Map(); // Store partial paths by node number
     private occupiedCells: Set<string> = new Set(); // Track cells occupied by completed paths
-    private currentLevel: number = 1;
     private isGameWon: boolean = false;
-    private levelDisplay: cc.Label = null;
 
     protected onLoad(): void {
         this.initComponent();
@@ -41,7 +49,6 @@ export class GameDirector02 extends cc.Component {
     
     protected start(): void {
         this.initUI();
-        this.createLevelDisplay();
         this.startGame();
     }
 
@@ -49,10 +56,22 @@ export class GameDirector02 extends cc.Component {
         this.boardManagerCmp = this.boardManager.getComponent(BoardManager02);
         this.nodeManagerCmp = this.nodeManager.getComponent(NodeManager02);
         this.pathManagerCmp = this.pathManager.getComponent(PathManager02);
+        this.levelManagerCmp = this.levelManager.getComponent(LevelManager02);
+        this.resultManagerCmp = this.resultManager.getComponent(ResultManager02);
+        
+        // Debug log to check components
+        cc.log('GameDirector02: BoardManager component:', this.boardManagerCmp ? 'Found' : 'Missing');
+        cc.log('GameDirector02: NodeManager component:', this.nodeManagerCmp ? 'Found' : 'Missing');
+        cc.log('GameDirector02: PathManager component:', this.pathManagerCmp ? 'Found' : 'Missing');
+        cc.log('GameDirector02: LevelManager component:', this.levelManagerCmp ? 'Found' : 'Missing');
+        cc.log('GameDirector02: ResultManager component:', this.resultManagerCmp ? 'Found' : 'Missing');
     }
     
     private setupEvents(): void {
         this.boardManager.on('cell-clicked', this.onCellClicked, this);
+        
+        // Listen for level change events from LevelManager
+        this.levelManager.on('level-changed', this.onLevelChanged, this);
     }
     
     private setupKeyboardEvents(): void {
@@ -100,8 +119,18 @@ export class GameDirector02 extends cc.Component {
     }
     
     private generateLevel(): void {
+        const currentLevel = this.levelManagerCmp.getCurrentLevel();
+        cc.log(`🎲 GameDirector02: GENERATING LEVEL ${currentLevel}...`);
+        
         if (this.nodeManagerCmp) {
+            cc.log(`🎯 GameDirector02: Calling NodeManager.generateRandomNodes()...`);
             this.nodeManagerCmp.generateRandomNodes();
+            
+            const nodeCount = this.nodeManagerCmp.getNodes().length;
+            const pairCount = this.nodeManagerCmp.getNumberOfPairs();
+            cc.log(`✅ GameDirector02: Level ${currentLevel} generated - ${pairCount} pairs (${nodeCount} nodes total)`);
+        } else {
+            cc.error(`❌ GameDirector02: NodeManager component not found!`);
         }
     }
     
@@ -366,31 +395,41 @@ export class GameDirector02 extends cc.Component {
         if (this.isGameWon) return; // Prevent multiple win triggers
         
         const totalPairs = this.nodeManagerCmp.getNumberOfPairs();
+        const currentLevel = this.levelManagerCmp.getCurrentLevel();
         cc.log(`Win check: ${this.completedPaths.size}/${totalPairs} pairs completed`);
         
         if (this.completedPaths.size === totalPairs) {
             this.isGameWon = true;
-            cc.log(`🎉 Level ${this.currentLevel} completed! Starting win animation...`);
+            cc.log(`🎉 Level ${currentLevel} completed! Starting win animation...`);
             this.playWinAnimation();
-            
-            // Auto next level after 5 seconds
-            this.scheduleOnce(() => {
-                this.nextLevel();
-            }, 5.0);
         }
     }
     
+    private onLevelChanged(newLevel: number): void {
+        cc.log(`📡 GameDirector02: RECEIVED LEVEL CHANGED EVENT - New Level: ${newLevel}`);
+        // Level display is handled by LevelManager02
+    }
+    
     private playWinAnimation(): void {
+        const currentLevel = this.levelManagerCmp.getCurrentLevel();
+        cc.log(`🎉 GameDirector02: STARTING WIN ANIMATION for Level ${currentLevel}...`);
+        
         // 1. Flash all completed paths
+        cc.log(`✨ GameDirector02: Flashing completed paths...`);
         this.flashCompletedPaths();
         
-        // 2. Show win text with scale animation
+        // 2. Show win text with countdown via ResultManager
         this.scheduleOnce(() => {
-            this.showWinText();
+            cc.log(`📝 GameDirector02: Showing win animation via ResultManager...`);
+            this.resultManagerCmp.showWinAnimation(currentLevel, () => {
+                cc.log(`📞 GameDirector02: Win animation callback triggered - calling nextLevel()`);
+                this.nextLevel();
+            });
         }, 0.5);
         
         // 3. Particle effect on all nodes
         this.scheduleOnce(() => {
+            cc.log(`🎆 GameDirector02: Playing node particle effects...`);
             this.playNodeParticles();
         }, 1.0);
     }
@@ -407,76 +446,36 @@ export class GameDirector02 extends cc.Component {
         }
     }
     
-    private showWinText(): void {
-        // Create win text node
-        const winTextNode = new cc.Node('WinText');
-        this.node.addChild(winTextNode);
-        
-        // Add UITransform first
-        const transform = winTextNode.addComponent(cc.UITransform);
-        transform.setContentSize(500, 150);
-        
-        // Add label component
-        const label = winTextNode.addComponent(cc.Label);
-        label.string = `🎉 LEVEL ${this.currentLevel} COMPLETE! 🎉\nNext level in 5s...`;
-        label.fontSize = 50;
-        label.color = cc.Color.YELLOW;
-        label.horizontalAlign = cc.Label.HorizontalAlign.CENTER;
-        label.verticalAlign = cc.Label.VerticalAlign.CENTER;
-        
-        // Position at center
-        winTextNode.setPosition(0, 100, 0);
-        
-        // Simple scale animation
-        winTextNode.setScale(0, 0, 1);
-        const scaleUp = cc.tween(winTextNode)
-            .to(0.5, { scale: cc.v3(1.0, 1.0, 1.0) }, { easing: 'backOut' });
-        
-        scaleUp.start();
-        
-        // Countdown animation
-        this.startCountdown(label);
-        
-        // Auto remove after 5 seconds
-        this.scheduleOnce(() => {
-            if (winTextNode && winTextNode.isValid) {
-                winTextNode.destroy();
-            }
-        }, 5.0);
-    }
-    
-    private startCountdown(label: cc.Label): void {
-        let countdown = 5;
-        
-        const updateCountdown = () => {
-            if (label && label.isValid) {
-                label.string = `🎉 LEVEL ${this.currentLevel} COMPLETE! 🎉\nNext level in ${countdown}s...`;
-                countdown--;
-                
-                if (countdown >= 0) {
-                    this.scheduleOnce(updateCountdown, 1.0);
-                }
-            }
-        };
-        
-        this.scheduleOnce(updateCountdown, 1.0);
-    }
-    
     private nextLevel(): void {
-        this.currentLevel++;
-        this.updateLevelDisplay();
-        cc.log(`🚀 Starting Level ${this.currentLevel}`);
+        const currentLevel = this.levelManagerCmp.getCurrentLevel();
+        cc.log(`🚀 GameDirector02: STARTING NEXT LEVEL PROCESS - Current Level: ${currentLevel}`);
+        
+        // Advance level via LevelManager
+        cc.log(`📈 GameDirector02: Calling LevelManager.nextLevel()...`);
+        this.levelManagerCmp.nextLevel();
+        
+        const newLevel = this.levelManagerCmp.getCurrentLevel();
+        cc.log(`📊 GameDirector02: Level advanced from ${currentLevel} to ${newLevel}`);
         
         // Reset game state
+        cc.log(`🔄 GameDirector02: Resetting game state...`);
         this.resetGameState();
         
-        // Generate new level
+        // Generate new level immediately
+        cc.log(`🎲 GameDirector02: Generating new level ${newLevel}...`);
         this.generateLevel();
+        
+        cc.log(`✅ GameDirector02: Next level ${newLevel} started successfully!`);
     }
     
     private resetGameState(): void {
+        const currentLevel = this.levelManagerCmp.getCurrentLevel();
+        cc.log(`🔄 GameDirector02: RESETTING GAME STATE for Level ${currentLevel}...`);
+        
         // Clear all paths and states
+        cc.log(`🧹 GameDirector02: Clearing all paths...`);
         this.pathManagerCmp.clearAllPaths();
+        
         this.isDrawingPath = false;
         this.selectedStartNode = null;
         this.clearCurrentPathHighlights();
@@ -485,37 +484,17 @@ export class GameDirector02 extends cc.Component {
         this.partialPaths.clear();
         this.occupiedCells.clear();
         this.isGameWon = false;
+        cc.log(`📊 GameDirector02: Game state variables reset`);
         
         // Clear all cell states
+        cc.log(`🎯 GameDirector02: Clearing all cell states...`);
         this.clearAllCellStates();
         
-        cc.log(`Game state reset for Level ${this.currentLevel}`);
-    }
-    
-    private createLevelDisplay(): void {
-        // Create level display node
-        const levelNode = new cc.Node('LevelDisplay');
-        this.node.addChild(levelNode);
+        // IMPORTANT: Clear all existing nodes
+        cc.log(`🗑️ GameDirector02: Clearing all existing nodes...`);
+        this.nodeManagerCmp.clearAllNodes();
         
-        // Add UITransform
-        const transform = levelNode.addComponent(cc.UITransform);
-        transform.setContentSize(200, 50);
-        
-        // Add label
-        this.levelDisplay = levelNode.addComponent(cc.Label);
-        this.levelDisplay.string = `Level ${this.currentLevel}`;
-        this.levelDisplay.fontSize = 36;
-        this.levelDisplay.color = cc.Color.WHITE;
-        this.levelDisplay.horizontalAlign = cc.Label.HorizontalAlign.CENTER;
-        
-        // Position at top
-        levelNode.setPosition(0, 300, 0);
-    }
-    
-    private updateLevelDisplay(): void {
-        if (this.levelDisplay && this.levelDisplay.isValid) {
-            this.levelDisplay.string = `Level ${this.currentLevel}`;
-        }
+        cc.log(`✅ GameDirector02: Game state reset completed for Level ${currentLevel}`);
     }
     
     private clearAllCellStates(): void {
@@ -589,7 +568,7 @@ export class GameDirector02 extends cc.Component {
     }
     
     restartGame(): void {
-        this.currentLevel = 1;
+        this.levelManagerCmp.resetToLevel1();
         this.resetGameState();
         this.generateLevel();
         cc.log('Game restarted - back to Level 1');
@@ -598,6 +577,10 @@ export class GameDirector02 extends cc.Component {
     onDestroy(): void {
         if (this.boardManager) {
             this.boardManager.off('cell-clicked', this.onCellClicked, this);
+        }
+        
+        if (this.levelManager) {
+            this.levelManager.off('level-changed', this.onLevelChanged, this);
         }
         
         cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
