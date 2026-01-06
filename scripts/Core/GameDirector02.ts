@@ -161,7 +161,8 @@ export class GameDirector02 extends cc.Component {
         this.pathManagerCmp.drawDirectLineWorld(
             new cc.Vec2(fromWorld.x, fromWorld.y),
             new cc.Vec2(toWorld.x, toWorld.y),
-            this.selectedStartNode.getNodeColor()
+            this.selectedStartNode.getNodeColor(),
+            false // Not completed yet
         );
     }
     
@@ -169,8 +170,11 @@ export class GameDirector02 extends cc.Component {
         // Draw final segment if needed
         this.drawPathSegment();
         
-        // Store completed path
+        // Complete the path in PathManager (this will add glow effect)
         const nodeNumber = this.selectedStartNode.getNodeNumber();
+        this.pathManagerCmp.completePathForNode(nodeNumber);
+        
+        // Store completed path
         this.completedPaths.set(nodeNumber, [...this.currentPath]);
         
         // Mark cells as occupied (except start and end nodes)
@@ -191,7 +195,7 @@ export class GameDirector02 extends cc.Component {
         // Check if all pairs are connected
         this.checkWinCondition();
         
-        cc.log(`Path completed for node ${nodeNumber}. Total completed: ${this.completedPaths.size}`);
+        cc.log(`✨ Path completed for node ${nodeNumber} with glow effect! Total completed: ${this.completedPaths.size}`);
     }
     
     private cancelCurrentPath(): void {

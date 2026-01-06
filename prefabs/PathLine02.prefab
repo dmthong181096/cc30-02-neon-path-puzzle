@@ -171,8 +171,8 @@
       "b": 0,
       "a": 255
     },
-    "_lineJoin": 2,
-    "_lineCap": 0,
+    "_lineJoin": 0,
+    "_lineCap": 1,
     "_fillColor": {
       "__type__": "cc.Color",
       "r": 255,
@@ -244,6 +244,7 @@
       "__id__": 5
     },
     "lineWidth": 4,
+    "glowWidth": 12,
     "_id": ""
   },
   {

@@ -12,39 +12,100 @@ export class PathManager02 extends cc.Component {
     @property({ displayName: "Path Container", type: cc.Node })
     pathContainer: cc.Node = null;
     
-    drawDirectLineWorld(fromWorld: cc.Vec2, toWorld: cc.Vec2, color: cc.Color): void {
-        cc.log(`Step 5: PathManager drawDirectLineWorld called`);
-        cc.log(`  From: (${fromWorld.x}, ${fromWorld.y}) To: (${toWorld.x}, ${toWorld.y})`);
-        
-        if (!this.pathLinePrefab) {
-            cc.error('Step 5 ERROR: pathLinePrefab is null!');
-            return;
+    private currentPathLines: PathLine02[] = []; // Lines for current drawing path
+    private completedPathLines: Map<number, PathLine02[]> = new Map(); // Lines for completed paths by node number
+    
+    drawDirectLineWorld(fromWorld: cc.Vec2, toWorld: cc.Vec2, color: cc.Color, isCompleted: boolean = false): PathLine02 | null {
+        if (!this.pathLinePrefab || !this.pathContainer) {
+            cc.error('PathManager02: Missing prefab or container!');
+            return null;
         }
         
-        if (!this.pathContainer) {
-            cc.error('Step 5 ERROR: pathContainer is null!');
-            return;
-        }
-        
-        cc.log(`Step 6: Creating PathLine prefab instance`);
         const lineNode = cc.instantiate(this.pathLinePrefab);
         this.pathContainer.addChild(lineNode);
         
-        cc.log(`Step 7: Getting PathLine02 component`);
         const pathLine = lineNode.getComponent(PathLine02);
-        
         if (!pathLine) {
-            cc.error('Step 7 ERROR: PathLine02 component not found on prefab!');
-            return;
+            cc.error('PathManager02: PathLine02 component not found on prefab!');
+            return null;
         }
         
         // Convert world position to local position relative to pathContainer
         const fromLocal = this.worldToLocal(fromWorld);
         const toLocal = this.worldToLocal(toWorld);
         
-        cc.log(`Step 8: Local positions - From: (${fromLocal.x}, ${fromLocal.y}) To: (${toLocal.x}, ${toLocal.y})`);
-        
         pathLine.drawLineWorld(fromLocal, toLocal, color);
+        
+        // Set glow effect for completed paths
+        if (isCompleted) {
+            pathLine.setGlowEffect(true);
+        }
+        
+        // Add to current path lines
+        this.currentPathLines.push(pathLine);
+        
+        return pathLine;
+    }
+    
+    completePathForNode(nodeNumber: number): void {
+        // Move current path lines to completed paths
+        if (this.currentPathLines.length > 0) {
+            this.completedPathLines.set(nodeNumber, [...this.currentPathLines]);
+            
+            // Apply glow effect to all lines in this completed path
+            this.currentPathLines.forEach(line => {
+                line.setGlowEffect(true);
+                line.setCompleted(true);
+            });
+            
+            this.currentPathLines = [];
+            cc.log(`PathManager02: Completed path for node ${nodeNumber} with ${this.completedPathLines.get(nodeNumber).length} lines`);
+        }
+    }
+    
+    clearCurrentPath(): void {
+        // Clear only current drawing path lines
+        this.currentPathLines.forEach(line => {
+            if (line && line.node) {
+                line.node.destroy();
+            }
+        });
+        this.currentPathLines = [];
+        cc.log('PathManager02: Cleared current path');
+    }
+    
+    clearPathForNode(nodeNumber: number): void {
+        // Clear specific completed path
+        const pathLines = this.completedPathLines.get(nodeNumber);
+        if (pathLines) {
+            pathLines.forEach(line => {
+                if (line && line.node) {
+                    line.node.destroy();
+                }
+            });
+            this.completedPathLines.delete(nodeNumber);
+            cc.log(`PathManager02: Cleared path for node ${nodeNumber}`);
+        }
+    }
+    
+    clearAllPaths(): void {
+        // Clear all paths
+        this.clearCurrentPath();
+        
+        this.completedPathLines.forEach((pathLines, nodeNumber) => {
+            pathLines.forEach(line => {
+                if (line && line.node) {
+                    line.node.destroy();
+                }
+            });
+        });
+        this.completedPathLines.clear();
+        
+        if (this.pathContainer) {
+            this.pathContainer.removeAllChildren();
+        }
+        
+        cc.log('PathManager02: Cleared all paths');
     }
     
     private worldToLocal(worldPos: cc.Vec2): cc.Vec2 {
@@ -55,16 +116,7 @@ export class PathManager02 extends cc.Component {
         );
     }
     
-    clearCurrentPath(): void {
-        // Clear only the current drawing path, not completed paths
-        // This would need to track which lines belong to current path vs completed paths
-        // For now, we'll implement a simple version
-        cc.log('PathManager02: Clearing current path');
-    }
-    
-    clearAllPaths(): void {
-        if (this.pathContainer) {
-            this.pathContainer.removeAllChildren();
-        }
+    getCompletedPathsCount(): number {
+        return this.completedPathLines.size;
     }
 }
