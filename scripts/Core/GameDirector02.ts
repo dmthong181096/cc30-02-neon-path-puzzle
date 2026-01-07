@@ -245,6 +245,13 @@ export class GameDirector02 extends cc.Component {
             cell.setSelected(true);
             cc.log(`Started path from node ${node.getNodeNumber()}`);
         } else {
+            // Check if clicking the same start node to cancel
+            if (this.selectedStartNode && node === this.selectedStartNode) {
+                cc.log(`🚫 User clicked same start node - cancelling path`);
+                this.cancelCurrentPath();
+                return;
+            }
+            
             // Check if this is a valid end node (same number as start node)
             if (this.selectedStartNode && 
                 node.getNodeNumber() === this.selectedStartNode.getNodeNumber() &&
