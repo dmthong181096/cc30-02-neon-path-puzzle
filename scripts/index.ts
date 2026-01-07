@@ -15,12 +15,7 @@ export { AssetManager02 } from './Helper/AssetManager02';
 export { GridCell02 } from './UI/Components/GridCell02';
 export { NodeItem02 } from './UI/Components/NodeItem02';
 export { PathLine02 } from './UI/Components/PathLine02';
-
-// UI Screens
-export { GameScreen02 } from './UI/Screens/GameScreen02';
-export { LoadingScreen02 } from './UI/Screens/LoadingScreen02';
-export { SettingsScreen02 } from './UI/Screens/SettingsScreen02';
-export { ResultScreen02 } from './UI/Screens/ResultScreen02';
+export { LoadingScene02 } from './UI/LoadingScene02';
 
 // System Managers
 export { InputManager02 } from './System/InputManager02';
