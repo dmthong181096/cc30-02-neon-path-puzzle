@@ -4,6 +4,8 @@ import { NodeManager02 } from './NodeManager02';
 import { PathManager02 } from './PathManager02';
 import { LevelManager02 } from './LevelManager02';
 import { ResultManager02 } from './ResultManager02';
+import { ScoreManager02 } from './ScoreManager02';
+import { TimerManager02 } from './TimerManager02';
 import { GameWriter02 } from './GameWriter02';
 import { GameState02, GameResultEvent, CellPosition, NodeData } from '../Data/GameState02';
 import { GridCell02 } from '../UI/Components/GridCell02';
@@ -28,13 +30,26 @@ export class GameDirector02 extends cc.Component {
     
     @property({displayName: "Result Manager", type: cc.Node})
     resultManager: cc.Node = null;
+    
+    @property({displayName: "Score Manager", type: cc.Node})
+    scoreManager: cc.Node = null;
+    
+    @property({displayName: "Timer Manager", type: cc.Node})
+    timerManager: cc.Node = null;
 
     protected boardManagerCmp: BoardManager02 = null;
     protected nodeManagerCmp: NodeManager02 = null;
     protected pathManagerCmp: PathManager02 = null;
     protected levelManagerCmp: LevelManager02 = null;
     protected resultManagerCmp: ResultManager02 = null;
+    protected scoreManagerCmp: ScoreManager02 = null;
+    protected timerManagerCmp: TimerManager02 = null;
     protected gameWriter: GameWriter02 = null;
+    
+    // Store bound event handlers for proper cleanup
+    private boundOnLevelTimeExpired: (data: { levelNumber: number }) => void;
+    private boundOnTimeWarning: (data: { remaining: number }) => void;
+    private boundOnCountdownTick: (data: { seconds: number }) => void;
     
     private selectedStartNode: NodeItem02 = null;
     private isDrawingPath: boolean = false;
@@ -61,16 +76,11 @@ export class GameDirector02 extends cc.Component {
         this.pathManagerCmp = this.pathManager.getComponent(PathManager02);
         this.levelManagerCmp = this.levelManager.getComponent(LevelManager02);
         this.resultManagerCmp = this.resultManager.getComponent(ResultManager02);
+        this.scoreManagerCmp = this.scoreManager.getComponent(ScoreManager02);
+        this.timerManagerCmp = this.timerManager.getComponent(TimerManager02);
         
         // Create GameWriter instance (pure class)
         this.gameWriter = new GameWriter02();
-        
-        cc.log('GameDirector02: BoardManager component:', this.boardManagerCmp ? 'Found' : 'Missing');
-        cc.log('GameDirector02: NodeManager component:', this.nodeManagerCmp ? 'Found' : 'Missing');
-        cc.log('GameDirector02: PathManager component:', this.pathManagerCmp ? 'Found' : 'Missing');
-        cc.log('GameDirector02: LevelManager component:', this.levelManagerCmp ? 'Found' : 'Missing');
-        cc.log('GameDirector02: ResultManager component:', this.resultManagerCmp ? 'Found' : 'Missing');
-        cc.log('GameDirector02: GameWriter instance:', this.gameWriter ? 'Created' : 'Missing');
     }
     
     private setupEvents(): void {
@@ -81,6 +91,23 @@ export class GameDirector02 extends cc.Component {
         this.gameWriter.on(GameResultEvent.WIN, this.onGameWin.bind(this));
         this.gameWriter.on(GameResultEvent.LOSE, this.onGameLose.bind(this));
         this.gameWriter.on(GameResultEvent.CONTINUE, this.onGameContinue.bind(this));
+        
+        // Store bound functions for proper cleanup
+        this.boundOnLevelTimeExpired = this.onLevelTimeExpired.bind(this);
+        this.boundOnTimeWarning = this.onTimeWarning.bind(this);
+        this.boundOnCountdownTick = this.onCountdownTick.bind(this);
+        
+        // Set direct callback for timer instead of using event system
+        cc.log(`🔗 GameDirector02: Setting direct timer callback instead of event listeners...`);
+        this.timerManagerCmp.setLevelTimeExpiredCallback((levelNumber: number) => {
+            cc.log(`📞 GameDirector02: Direct callback received for level ${levelNumber} time expired`);
+            this.onLevelTimeExpired({ levelNumber });
+        });
+        
+        // Still register other timer events (these are less critical)
+        this.timerManagerCmp.registerEvent('time-warning', this.boundOnTimeWarning);
+        this.timerManagerCmp.registerEvent('countdown-tick', this.boundOnCountdownTick);
+        cc.log(`✅ GameDirector02: Timer callback and events set up`);
     }
     
     private setupKeyboardEvents(): void {
@@ -172,7 +199,6 @@ export class GameDirector02 extends cc.Component {
     private requestGameResultCheck(): void {
         if (this.lastGameResult !== null) return;
         
-        cc.log(`📤 GameDirector02: Requesting game result check from GameWriter...`);
         this.gameWriter.checkGameResult(this.getGameState());
     }
     
@@ -182,7 +208,20 @@ export class GameDirector02 extends cc.Component {
         
         this.lastGameResult = 'win';
         const currentLevel = this.levelManagerCmp.getCurrentLevel();
-        cc.log(`🎉 GameDirector02: Received WIN event for Level ${currentLevel}!`);
+        const totalPairs = this.nodeManagerCmp.getNumberOfPairs();
+        
+        // Pause all timers when showing win result
+        cc.log(`⏸️ GameDirector02: Pausing all timers for win result display`);
+        this.timerManagerCmp.pauseAll();
+        
+        // Stop level timer and get remaining time
+        const remainingTime = this.timerManagerCmp.stopLevelTimer();
+        const elapsedTime = 60 - remainingTime; // Calculate elapsed from remaining
+        
+        // Record level completion and get score (pass elapsed time in milliseconds)
+        const levelScore = this.scoreManagerCmp.recordLevelCompletion(currentLevel, totalPairs);
+        
+        cc.log(`🎉 GameDirector02: WIN - Level ${currentLevel} completed with ${remainingTime.toFixed(1)}s remaining! Score: +${levelScore}`);
         this.playWinAnimation();
     }
     
@@ -190,12 +229,55 @@ export class GameDirector02 extends cc.Component {
         if (this.lastGameResult !== null) return;
         
         this.lastGameResult = 'lose';
+        
+        // Pause all timers when showing lose result
+        cc.log(`⏸️ GameDirector02: Pausing all timers for lose result display`);
+        this.timerManagerCmp.pauseAll();
+        
         cc.log(`💀 GameDirector02: Received LOSE event!`);
         this.triggerGameOver();
     }
     
     private onGameContinue(): void {
         cc.log(`✅ GameDirector02: Game continues...`);
+    }
+    
+    // Timer event handlers
+    private onLevelTimeExpired(data: { levelNumber: number }): void {
+        cc.log(`⏰ GameDirector02: Level ${data.levelNumber} time expired - GAME OVER!`);
+        cc.log(`🔍 DEBUG: lastGameResult before = ${this.lastGameResult}`);
+        
+        // Pause all timers when showing time expired result
+        cc.log(`⏸️ GameDirector02: Pausing all timers for time expired result display`);
+        this.timerManagerCmp.pauseAll();
+        
+        // Trigger game over due to time limit
+        this.lastGameResult = 'lose';
+        cc.log(`🔍 DEBUG: lastGameResult after = ${this.lastGameResult}`);
+        this.triggerGameOver();
+    }
+    
+    private onTimeWarning(data: { remaining: number }): void {
+        // Could add visual/audio warning here
+        // this.showTimeWarning(data.remaining);
+    }
+    
+    private onCountdownTick(data: { seconds: number }): void {
+        // Could add sound effects, screen shake, or other dramatic effects
+        if (data.seconds <= 5) {
+            // Extra dramatic effects for final 5 seconds
+            this.playUrgentCountdownEffects(data.seconds);
+        }
+    }
+    
+    private playUrgentCountdownEffects(seconds: number): void {
+        // Could add screen shake, sound effects, particle effects, etc.
+        
+        // Example: Screen shake effect (if you have a camera shake system)
+        // this.cameraShake.shake(0.1, 0.05);
+        
+        // Example: Play urgent sound
+        // this.audioManager.playSound('countdown-urgent');
     }
 
     initUI() {
@@ -210,15 +292,28 @@ export class GameDirector02 extends cc.Component {
     
     private generateLevel(): void {
         const currentLevel = this.levelManagerCmp.getCurrentLevel();
-        cc.log(`🎲 GameDirector02: GENERATING LEVEL ${currentLevel}...`);
         
         if (this.nodeManagerCmp) {
-            cc.log(`🎯 GameDirector02: Calling NodeManager.generateRandomNodes()...`);
             this.nodeManagerCmp.generateRandomNodes();
             
             const nodeCount = this.nodeManagerCmp.getNodes().length;
             const pairCount = this.nodeManagerCmp.getNumberOfPairs();
-            cc.log(`✅ GameDirector02: Level ${currentLevel} generated - ${pairCount} pairs (${nodeCount} nodes total)`);
+            cc.log(`✅ Level ${currentLevel} generated - ${pairCount} pairs (${nodeCount} nodes total)`);
+            
+            // Initialize score tracking for this level
+            this.scoreManagerCmp.initLevel(currentLevel);
+            
+            // Resume all timers when starting new level (game timer continues)
+            cc.log(`▶️ GameDirector02: Resuming all timers for new level`);
+            this.timerManagerCmp.resumeAll();
+            
+            // RE-REGISTER timer events before starting timer (in case they were removed)
+            cc.log(`🔄 GameDirector02: Re-registering timer events before starting timer...`);
+            this.timerManagerCmp.registerEvent('time-warning', this.boundOnTimeWarning);
+            this.timerManagerCmp.registerEvent('countdown-tick', this.boundOnCountdownTick);
+            
+            // Start level countdown timer (60 seconds)
+            this.timerManagerCmp.startLevelTimer(currentLevel, 60); // Tạm thời để 10s để test nhanh
         } else {
             cc.error(`❌ GameDirector02: NodeManager component not found!`);
         }
@@ -332,6 +427,10 @@ export class GameDirector02 extends cc.Component {
                 this.currentPath.push(cell);
                 cell.setHighlight(true);
                 this.drawPathSegment();
+                
+                // Record move for scoring
+                this.scoreManagerCmp.recordMove();
+                
                 cc.log(`Added path point at (${cell.getRow()}, ${cell.getCol()})`);
                 
                 // Check game result immediately after adding each cell
@@ -493,7 +592,10 @@ export class GameDirector02 extends cc.Component {
         // 1. Animate the pair of nodes
         this.nodeManagerCmp.playPairCompletedAnimation(nodeNumber);
         
-        // 2. Path lines already animated via PathManager.completePathForNode()
+        // 2. Record path completion for scoring
+        this.scoreManagerCmp.recordPathCompletion(nodeNumber, this.currentPath.length);
+        
+        // 3. Path lines already animated via PathManager.completePathForNode()
         
         this.isDrawingPath = false;
         this.selectedStartNode = null;
@@ -637,22 +739,29 @@ export class GameDirector02 extends cc.Component {
     
     private playWinAnimation(): void {
         const currentLevel = this.levelManagerCmp.getCurrentLevel();
+        const totalPairs = this.nodeManagerCmp.getNumberOfPairs();
+        const remainingTime = this.timerManagerCmp.getLevelTime(); // Get remaining time
+        const elapsedTime = 60 - remainingTime; // Calculate elapsed time
+        
         cc.log(`🎉 GameDirector02: STARTING WIN ANIMATION for Level ${currentLevel}...`);
         
         // 1. Flash all completed paths
         cc.log(`✨ GameDirector02: Flashing completed paths...`);
         this.flashCompletedPaths();
         
-        // 2. Show win text with countdown via ResultManager
+        // 2. Get score breakdown for display (pass elapsed time in milliseconds)
+        const scoreBreakdown = this.scoreManagerCmp.getScoreBreakdown(currentLevel, elapsedTime * 1000, totalPairs);
+        
+        // 3. Show win text with score breakdown via ResultManager
         this.scheduleOnce(() => {
-            cc.log(`📝 GameDirector02: Showing win animation via ResultManager...`);
-            this.resultManagerCmp.showWinAnimation(currentLevel, () => {
+            cc.log(`📝 GameDirector02: Showing win animation with score via ResultManager...`);
+            this.resultManagerCmp.showWinAnimationWithScore(currentLevel, scoreBreakdown, () => {
                 cc.log(`📞 GameDirector02: Win animation callback triggered - calling nextLevel()`);
                 this.nextLevel();
             });
         }, 0.5);
         
-        // 3. Particle effect on all nodes
+        // 4. Particle effect on all nodes
         this.scheduleOnce(() => {
             cc.log(`🎆 GameDirector02: Playing node particle effects...`);
             this.playNodeParticles();
@@ -711,6 +820,8 @@ export class GameDirector02 extends cc.Component {
         this.completedPaths.clear();
         this.partialPaths.clear();
         this.occupiedCells.clear();
+        
+        cc.log(`🔍 DEBUG: Resetting lastGameResult from ${this.lastGameResult} to null`);
         this.lastGameResult = null; // Reset game result
         
         this.clearAllCellStates();
@@ -791,7 +902,11 @@ export class GameDirector02 extends cc.Component {
     
     restartGame(): void {
         cc.log('🔄 GameDirector02: Restarting game - back to Level 1');
+        cc.log(`🔍 DEBUG: Before restart - lastGameResult = ${this.lastGameResult}`);
+        
         this.levelManagerCmp.resetToLevel1();
+        this.scoreManagerCmp.resetScore(); // Reset score for new game
+        this.timerManagerCmp.resetForNewGame(); // Reset timers for new game
         this.resetGameState(); // generateLevel() will be called in callback
     }
     
@@ -808,6 +923,16 @@ export class GameDirector02 extends cc.Component {
             this.gameWriter.removeAllListeners();
         }
         
+        // Unregister specific timer events using stored bound functions
+        if (this.timerManagerCmp) {
+            this.timerManagerCmp.unregisterEvent('level-time-expired', this.boundOnLevelTimeExpired);
+            this.timerManagerCmp.unregisterEvent('time-warning', this.boundOnTimeWarning);
+            this.timerManagerCmp.unregisterEvent('countdown-tick', this.boundOnCountdownTick);
+        }
+        
         cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+        
+        // Don't call super.onDestroy() to avoid removing all event listeners
+        // super.onDestroy() would call BaseSubscriber.eventEmitter.removeAllListeners()
     }
 }

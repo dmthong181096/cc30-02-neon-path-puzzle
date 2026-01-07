@@ -41,6 +41,103 @@ export class ResultManager02 extends cc.Component {
         this.showWinText(currentLevel, onComplete);
     }
     
+    private showWinTextWithScore(currentLevel: number, scoreData: any, onComplete?: () => void): void {
+        cc.log(`📝 ResultManager02: Displaying win text with score for Level ${currentLevel}`);
+        
+        // Create detailed score text
+        let scoreText = `🎉 LEVEL ${currentLevel} COMPLETE! 🎉\n`;
+        scoreText += `💯 Score: +${scoreData.totalScore}\n`;
+        
+        if (scoreData.timeBonus > 0) {
+            scoreText += `⚡ Time Bonus: +${scoreData.timeBonus}\n`;
+        }
+        if (scoreData.efficiencyBonus > 0) {
+            scoreText += `🎯 Efficiency: +${scoreData.efficiencyBonus}\n`;
+        }
+        if (scoreData.perfectBonus > 0) {
+            scoreText += `⭐ Perfect: +${scoreData.perfectBonus}\n`;
+        }
+        
+        scoreText += `\nNext level in 5s...`;
+        
+        this.resultLabel.string = scoreText;
+        cc.log(`📄 ResultManager02: Win text with score set`);
+        
+        // Position at center of container
+        this.resultNode.setPosition(0, 0, 0);
+        
+        // Simple scale animation
+        this.resultNode.setScale(0, 0, 1);
+        const scaleUp = cc.tween(this.resultNode)
+            .to(0.5, { scale: cc.v3(1.0, 1.0, 1.0) }, { easing: 'backOut' });
+        
+        scaleUp.start();
+        cc.log(`🎬 ResultManager02: Win text scale animation started`);
+        
+        // Countdown animation
+        this.startCountdownWithScore(this.resultLabel, currentLevel, scoreData, onComplete);
+        
+        // Auto remove after 5 seconds
+        this.scheduleOnce(() => {
+            this.hideWinText();
+        }, 5.0);
+        cc.log(`⏰ ResultManager02: Scheduled win text removal in 5 seconds`);
+    }
+    
+    private startCountdownWithScore(label: cc.Label, currentLevel: number, scoreData: any, onComplete?: () => void): void {
+        let countdown = 5;
+        cc.log(`⏱️ ResultManager02: Starting 5-second countdown with score for Level ${currentLevel}`);
+        
+        const updateCountdown = () => {
+            if (label && label.isValid) {
+                if (countdown > 0) {
+                    let scoreText = `🎉 LEVEL ${currentLevel} COMPLETE! 🎉\n`;
+                    scoreText += `💯 Total Score: +${scoreData.totalScore}\n`;
+                    scoreText += `\nNext level in ${countdown}s...`;
+                    
+                    label.string = scoreText;
+                    countdown--;
+                    
+                    // Schedule next countdown update
+                    this.scheduleOnce(updateCountdown, 1.0);
+                } else {
+                    // Countdown finished
+                    label.string = `🎉 LEVEL ${currentLevel} COMPLETE! 🎉\nStarting next level...`;
+                    cc.log(`🚀 ResultManager02: Countdown finished! Starting next level...`);
+                    
+                    // Call onComplete callback with flag check
+                    if (!this.callbackExecuted && onComplete) {
+                        cc.log(`📞 ResultManager02: Executing onComplete callback to advance level`);
+                        this.callbackExecuted = true;
+                        onComplete();
+                    }
+                }
+            }
+        };
+        
+        // Start the first countdown update after 1 second
+        this.scheduleOnce(updateCountdown, 1.0);
+    }
+    
+    showWinAnimationWithScore(currentLevel: number, scoreData: any, onComplete?: () => void): void {
+        cc.log(`🎉 ResultManager02: Starting win animation with score for Level ${currentLevel}`);
+        
+        // Reset callback flag
+        this.callbackExecuted = false;
+        
+        // Set up backup timer
+        if (onComplete) {
+            this.scheduleOnce(() => {
+                if (!this.callbackExecuted) {
+                    this.callbackExecuted = true;
+                    onComplete();
+                }
+            }, 6.0);
+        }
+        
+        this.showWinTextWithScore(currentLevel, scoreData, onComplete);
+    }
+    
     private showWinText(currentLevel: number, onComplete?: () => void): void {
         cc.log(`📝 ResultManager02: Displaying win text for Level ${currentLevel}`);
     
