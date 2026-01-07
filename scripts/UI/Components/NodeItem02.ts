@@ -52,11 +52,11 @@ export class NodeItem02 extends Subscriber02 {
         this.node.active = true;
         this.node.setScale(0, 0, 1);
         
-        // Scale up animation with bounce effect
+        // Gentle scale up animation
         const scaleUp = cc.tween(this.node)
             .delay(delay)
-            .to(0.4, { scale: cc.v3(1.2, 1.2, 1.0) }, { easing: 'backOut' })
-            .to(0.1, { scale: cc.v3(1.0, 1.0, 1.0) }, { easing: 'sineOut' });
+            .to(0.3, { scale: cc.v3(1.05, 1.05, 1.0) }, { easing: 'sineOut' })
+            .to(0.2, { scale: cc.v3(1.0, 1.0, 1.0) }, { easing: 'sineIn' });
         
         scaleUp.start();
     }
@@ -75,6 +75,34 @@ export class NodeItem02 extends Subscriber02 {
             });
         
         scaleDown.start();
+    }
+    
+    playCompletedAnimation(): void {
+        cc.log(`🎉 NodeItem02: Playing completed animation for node ${this.nodeNumber}`);
+        
+        // Gentle bounce animation - smaller scale
+        const bounce = cc.tween(this.node)
+            .to(0.2, { scale: cc.v3(1.1, 1.1, 1.0) }, { easing: 'sineOut' })
+            .to(0.2, { scale: cc.v3(1.0, 1.0, 1.0) }, { easing: 'sineIn' });
+        
+        bounce.start();
+        
+        // Subtle glow effect - softer
+        if (this.backgroundCircle) {
+            const originalColor = this.backgroundCircle.color.clone();
+            const softGlowColor = new cc.Color(
+                Math.min(255, originalColor.r + 40),
+                Math.min(255, originalColor.g + 40),
+                Math.min(255, originalColor.b + 40),
+                255
+            );
+            
+            const glow = cc.tween(this.backgroundCircle)
+                .to(0.15, { color: softGlowColor }, { easing: 'sineOut' })
+                .to(0.25, { color: originalColor }, { easing: 'sineIn' });
+            
+            glow.start();
+        }
     }
     
     private updateVisual(): void {

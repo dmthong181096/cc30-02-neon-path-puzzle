@@ -265,4 +265,19 @@ export class NodeManager02 extends Subscriber02 {
             });
         });
     }
+    
+    playPairCompletedAnimation(pairNumber: number): void {
+        cc.log(`🎉 NodeManager02: Playing completed animation for pair ${pairNumber}`);
+        
+        const pairNodes = this.getNodesByPairNumber(pairNumber);
+        if (pairNodes.length === 2) {
+            // First node starts immediately
+            pairNodes[0].playCompletedAnimation();
+            
+            // Second node with gentle timing
+            this.scheduleOnce(() => {
+                pairNodes[1].playCompletedAnimation();
+            }, 0.15); // Slower, more natural timing
+        }
+    }
 }

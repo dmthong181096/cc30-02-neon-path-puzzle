@@ -99,8 +99,46 @@ export class PathLine02 extends cc.Component {
             brighterColor.g = Math.min(255, brighterColor.g + 30);
             brighterColor.b = Math.min(255, brighterColor.b + 30);
             this.lineColor = brighterColor;
+            this.setGlowEffect(true); // Enable glow for completed paths
             this.updateLine();
+            
+            // Play completion animation
+            this.playCompletedAnimation();
         }
+    }
+    
+    playCompletedAnimation(): void {
+        cc.log(`🎉 PathLine02: Playing completed animation`);
+        
+        // Gentle pulse effect - smaller changes
+        const originalWidth = this.lineWidth;
+        const pulseWidth = originalWidth + 2; // Smaller increase
+        
+        // Manual animation using scheduleOnce
+        this.lineWidth = pulseWidth;
+        this.updateLine();
+        
+        this.scheduleOnce(() => {
+            this.lineWidth = originalWidth;
+            this.updateLine();
+        }, 0.2);
+        
+        // Subtle glow enhancement
+        this.playGentleGlow();
+    }
+    
+    private playGentleGlow(): void {
+        const originalGlowWidth = this.glowWidth;
+        const maxGlowWidth = originalGlowWidth + 3; // Smaller glow increase
+        
+        // Manual glow animation
+        this.glowWidth = maxGlowWidth;
+        this.updateLine();
+        
+        this.scheduleOnce(() => {
+            this.glowWidth = originalGlowWidth;
+            this.updateLine();
+        }, 0.25);
     }
     
     setPartial(isPartial: boolean): void {

@@ -480,6 +480,14 @@ export class GameDirector02 extends cc.Component {
             }
         });
         
+        // 🎉 PLAY COMPLETION ANIMATIONS
+        cc.log(`🎉 GameDirector02: Playing completion animations for pair ${nodeNumber}`);
+        
+        // 1. Animate the pair of nodes
+        this.nodeManagerCmp.playPairCompletedAnimation(nodeNumber);
+        
+        // 2. Path lines already animated via PathManager.completePathForNode()
+        
         this.isDrawingPath = false;
         this.selectedStartNode = null;
         this.clearCurrentPathHighlights();
