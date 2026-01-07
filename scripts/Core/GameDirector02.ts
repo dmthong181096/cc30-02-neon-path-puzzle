@@ -710,9 +710,16 @@ export class GameDirector02 extends cc.Component {
     private triggerGameOver(): void {
         cc.log(`💀 GameDirector02: GAME OVER - No solution possible!`);
         
-        // Show game over animation
-        this.resultManagerCmp.showGameOverAnimation(() => {
-            cc.log(`🔄 GameDirector02: Restarting game after game over...`);
+        // Get current game stats for cyberpunk display
+        const currentScore = this.scoreManagerCmp.getCurrentScore();
+        const currentLevel = this.levelManagerCmp.getCurrentLevel();
+        const totalMoves = this.timerManagerCmp.getTotalMoves();
+        
+        cc.log(`📊 GameDirector02: Game Over Stats - Score: ${currentScore}, Level: ${currentLevel}, Moves: ${totalMoves}`);
+        
+        // Show cyberpunk game over animation with stats
+        this.resultManagerCmp.showGameOverAnimationWithStats(currentScore, currentLevel, totalMoves, () => {
+            cc.log(`🔄 GameDirector02: Restarting game after cyberpunk game over...`);
             this.restartGame();
         });
     }
