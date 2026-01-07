@@ -40,6 +40,9 @@ export class NodeManager02 extends Subscriber02 {
         this.clearNodes();
         this.generateNodePairs();
         
+        // Play appear animations with stagger
+        this.playNodesAppearAnimation();
+        
         cc.log(`NodeManager02: Generated ${this.numberOfPairs} pairs (${this.numberOfPairs * 2} nodes total)`);
         cc.log(`NodeManager02: Actual nodes created: ${this.nodes.length}`);
     }
@@ -230,5 +233,36 @@ export class NodeManager02 extends Subscriber02 {
         this.numberOfPairs = 0;
         
         cc.log(`NodeManager02: All nodes cleared. Nodes array length: ${this.nodes.length}`);
+    }
+    
+    private playNodesAppearAnimation(): void {
+        cc.log(`🎬 NodeManager02: Playing appear animation for ${this.nodes.length} nodes`);
+        
+        this.nodes.forEach((node, index) => {
+            const delay = index * 0.1; // 0.1s delay between each node
+            node.playAppearAnimation(delay);
+        });
+    }
+    
+    playNodesHideAnimation(onComplete?: () => void): void {
+        cc.log(`🎬 NodeManager02: Playing hide animation for ${this.nodes.length} nodes`);
+        
+        let completedCount = 0;
+        const totalNodes = this.nodes.length;
+        
+        if (totalNodes === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        
+        this.nodes.forEach((node, index) => {
+            const delay = index * 0.05; // 0.05s delay between each node (faster than appear)
+            node.playHideAnimation(delay, () => {
+                completedCount++;
+                if (completedCount === totalNodes && onComplete) {
+                    onComplete();
+                }
+            });
+        });
     }
 }

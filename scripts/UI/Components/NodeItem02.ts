@@ -26,8 +26,55 @@ export class NodeItem02 extends Subscriber02 {
         this.gridPosition = gridPos;
         
         this.updateVisual();
+        this.setupInitialState();
         
         cc.log(`NodeItem02: Node ${number} initialized at (${gridPos.x}, ${gridPos.y})`);
+    }
+    
+    private setupInitialState(): void {
+        // Start invisible for animation
+        this.node.setScale(0, 0, 1);
+        
+        // Ensure node is visible
+        this.node.active = true;
+        if (this.backgroundCircle) {
+            this.backgroundCircle.node.active = true;
+        }
+        if (this.numberLabel) {
+            this.numberLabel.node.active = true;
+        }
+    }
+    
+    playAppearAnimation(delay: number = 0): void {
+        cc.log(`🎬 NodeItem02: Playing appear animation for node ${this.nodeNumber} with ${delay}s delay`);
+        
+        // Ensure node is visible and reset scale
+        this.node.active = true;
+        this.node.setScale(0, 0, 1);
+        
+        // Scale up animation with bounce effect
+        const scaleUp = cc.tween(this.node)
+            .delay(delay)
+            .to(0.4, { scale: cc.v3(1.2, 1.2, 1.0) }, { easing: 'backOut' })
+            .to(0.1, { scale: cc.v3(1.0, 1.0, 1.0) }, { easing: 'sineOut' });
+        
+        scaleUp.start();
+    }
+    
+    playHideAnimation(delay: number = 0, onComplete?: () => void): void {
+        cc.log(`🎬 NodeItem02: Playing hide animation for node ${this.nodeNumber} with ${delay}s delay`);
+        
+        // Scale down animation
+        const scaleDown = cc.tween(this.node)
+            .delay(delay)
+            .to(0.3, { scale: cc.v3(0, 0, 1.0) }, { easing: 'backIn' })
+            .call(() => {
+                if (onComplete) {
+                    onComplete();
+                }
+            });
+        
+        scaleDown.start();
     }
     
     private updateVisual(): void {

@@ -42,8 +42,7 @@ export class GameDirector02 extends cc.Component {
     private completedPaths: Map<number, GridCell02[]> = new Map();
     private partialPaths: Map<number, GridCell02[]> = new Map();
     private occupiedCells: Set<string> = new Set();
-    private isGameWon: boolean = false;
-    private isGameLost: boolean = false;
+    private lastGameResult: 'win' | 'lose' | null = null;
 
     protected onLoad(): void {
         this.initComponent();
@@ -171,7 +170,7 @@ export class GameDirector02 extends cc.Component {
     
     // Request GameWriter to check game result
     private requestGameResultCheck(): void {
-        if (this.isGameWon || this.isGameLost) return;
+        if (this.lastGameResult !== null) return;
         
         cc.log(`📤 GameDirector02: Requesting game result check from GameWriter...`);
         this.gameWriter.checkGameResult(this.getGameState());
@@ -179,18 +178,18 @@ export class GameDirector02 extends cc.Component {
     
     // Event handlers from GameWriter
     private onGameWin(): void {
-        if (this.isGameWon) return;
+        if (this.lastGameResult !== null) return;
         
-        this.isGameWon = true;
+        this.lastGameResult = 'win';
         const currentLevel = this.levelManagerCmp.getCurrentLevel();
         cc.log(`🎉 GameDirector02: Received WIN event for Level ${currentLevel}!`);
         this.playWinAnimation();
     }
     
     private onGameLose(): void {
-        if (this.isGameLost) return;
+        if (this.lastGameResult !== null) return;
         
-        this.isGameLost = true;
+        this.lastGameResult = 'lose';
         cc.log(`💀 GameDirector02: Received LOSE event!`);
         this.triggerGameOver();
     }
@@ -668,25 +667,28 @@ export class GameDirector02 extends cc.Component {
         const newLevel = this.levelManagerCmp.getCurrentLevel();
         cc.log(`📊 GameDirector02: Level advanced from ${currentLevel} to ${newLevel}`);
         
-        // Reset game state
-        cc.log(`🔄 GameDirector02: Resetting game state...`);
+        // Reset game state (generateLevel will be called in callback)
+        cc.log(`🔄 GameDirector02: Resetting game state for next level ${newLevel}...`);
         this.resetGameState();
         
-        // Generate new level immediately
-        cc.log(`🎲 GameDirector02: Generating new level ${newLevel}...`);
-        this.generateLevel();
-        
-        cc.log(`✅ GameDirector02: Next level ${newLevel} started successfully!`);
+        cc.log(`✅ GameDirector02: Next level ${newLevel} process started!`);
     }
     
     private resetGameState(): void {
-        const currentLevel = this.levelManagerCmp.getCurrentLevel();
-        cc.log(`🔄 GameDirector02: RESETTING GAME STATE for Level ${currentLevel}...`);
+        cc.log(`🔄 GameDirector02: Resetting game state...`);
         
-        // Clear all paths and states
-        cc.log(`🧹 GameDirector02: Clearing all paths...`);
+        // Play hide animation for nodes first, then clear everything
+        this.nodeManagerCmp.playNodesHideAnimation(() => {
+            this.finishResetGameState();
+            // Generate new level after reset animation completes
+            this.generateLevel();
+        });
+    }
+    
+    private finishResetGameState(): void {
+        cc.log(`🧹 GameDirector02: Finishing game state reset...`);
+        
         this.pathManagerCmp.clearAllPaths();
-        
         this.isDrawingPath = false;
         this.selectedStartNode = null;
         this.clearCurrentPathHighlights();
@@ -694,19 +696,12 @@ export class GameDirector02 extends cc.Component {
         this.completedPaths.clear();
         this.partialPaths.clear();
         this.occupiedCells.clear();
-        this.isGameWon = false;
-        this.isGameLost = false;
-        cc.log(`📊 GameDirector02: Game state variables reset`);
+        this.lastGameResult = null; // Reset game result
         
-        // Clear all cell states
-        cc.log(`🎯 GameDirector02: Clearing all cell states...`);
         this.clearAllCellStates();
-        
-        // IMPORTANT: Clear all existing nodes
-        cc.log(`🗑️ GameDirector02: Clearing all existing nodes...`);
         this.nodeManagerCmp.clearAllNodes();
         
-        cc.log(`✅ GameDirector02: Game state reset completed for Level ${currentLevel}`);
+        cc.log(`✅ GameDirector02: Game state reset completed`);
     }
     
     private clearAllCellStates(): void {
@@ -780,10 +775,9 @@ export class GameDirector02 extends cc.Component {
     }
     
     restartGame(): void {
+        cc.log('🔄 GameDirector02: Restarting game - back to Level 1');
         this.levelManagerCmp.resetToLevel1();
-        this.resetGameState();
-        this.generateLevel();
-        cc.log('Game restarted - back to Level 1');
+        this.resetGameState(); // generateLevel() will be called in callback
     }
     
     onDestroy(): void {

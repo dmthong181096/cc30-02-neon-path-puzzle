@@ -30,8 +30,13 @@ export class GameWriter02 extends EventEmitter02 {
     
     private checkWinCondition(gameState: GameState02): boolean {
         const completedCount = gameState.completedPaths.size;
-        cc.log(`📝 GameWriter02: Win check - ${completedCount}/${gameState.totalPairs} pairs completed`);
-        return completedCount === gameState.totalPairs;
+        const totalPairs = gameState.totalPairs;
+        cc.log(`📝 GameWriter02: Win check - ${completedCount}/${totalPairs} pairs completed`);
+        
+        const isWin = completedCount === totalPairs;
+        cc.log(`📝 GameWriter02: Win condition result: ${isWin}`);
+        
+        return isWin;
     }
     
     private checkLoseCondition(gameState: GameState02): boolean {
