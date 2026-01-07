@@ -169,13 +169,10 @@ export class ScoreManager02 extends Subscriber02 {
     private updateScoreDisplay(): void {
         cc.log(`📱 ScoreManager02: Updating display - Score: ${this.currentScore}, High: ${this.highScore}`);
         
-        if (this.scoreLabel) {
-            this.scoreLabel.string = `Score: ${this.currentScore.toLocaleString()}`;
-        }
-        
-        if (this.highScoreLabel) {
-            this.highScoreLabel.string = `Best: ${this.highScore.toLocaleString()}`;
-        }
+        this.scoreLabel.string = `${this.currentScore.toLocaleString()}`;
+                
+        this.highScoreLabel.string = `${this.highScore.toLocaleString()}`;
+           
     }
     
     private loadHighScore(): void {

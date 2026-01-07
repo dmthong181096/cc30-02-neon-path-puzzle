@@ -210,10 +210,6 @@ export class GameDirector02 extends cc.Component {
         const currentLevel = this.levelManagerCmp.getCurrentLevel();
         const totalPairs = this.nodeManagerCmp.getNumberOfPairs();
         
-        // Pause all timers when showing win result
-        cc.log(`⏸️ GameDirector02: Pausing all timers for win result display`);
-        this.timerManagerCmp.pauseAll();
-        
         // Stop level timer and get remaining time
         const remainingTime = this.timerManagerCmp.stopLevelTimer();
         const elapsedTime = 60 - remainingTime; // Calculate elapsed from remaining
@@ -230,10 +226,6 @@ export class GameDirector02 extends cc.Component {
         
         this.lastGameResult = 'lose';
         
-        // Pause all timers when showing lose result
-        cc.log(`⏸️ GameDirector02: Pausing all timers for lose result display`);
-        this.timerManagerCmp.pauseAll();
-        
         cc.log(`💀 GameDirector02: Received LOSE event!`);
         this.triggerGameOver();
     }
@@ -246,10 +238,6 @@ export class GameDirector02 extends cc.Component {
     private onLevelTimeExpired(data: { levelNumber: number }): void {
         cc.log(`⏰ GameDirector02: Level ${data.levelNumber} time expired - GAME OVER!`);
         cc.log(`🔍 DEBUG: lastGameResult before = ${this.lastGameResult}`);
-        
-        // Pause all timers when showing time expired result
-        cc.log(`⏸️ GameDirector02: Pausing all timers for time expired result display`);
-        this.timerManagerCmp.pauseAll();
         
         // Trigger game over due to time limit
         this.lastGameResult = 'lose';
@@ -303,17 +291,13 @@ export class GameDirector02 extends cc.Component {
             // Initialize score tracking for this level
             this.scoreManagerCmp.initLevel(currentLevel);
             
-            // Resume all timers when starting new level (game timer continues)
-            cc.log(`▶️ GameDirector02: Resuming all timers for new level`);
-            this.timerManagerCmp.resumeAll();
-            
             // RE-REGISTER timer events before starting timer (in case they were removed)
             cc.log(`🔄 GameDirector02: Re-registering timer events before starting timer...`);
             this.timerManagerCmp.registerEvent('time-warning', this.boundOnTimeWarning);
             this.timerManagerCmp.registerEvent('countdown-tick', this.boundOnCountdownTick);
             
-            // Start level countdown timer (60 seconds)
-            this.timerManagerCmp.startLevelTimer(currentLevel, 60); // Tạm thời để 10s để test nhanh
+            // Start level countdown timer (10 seconds for testing)
+            this.timerManagerCmp.startLevelTimer(currentLevel, 10);
         } else {
             cc.error(`❌ GameDirector02: NodeManager component not found!`);
         }
@@ -428,8 +412,9 @@ export class GameDirector02 extends cc.Component {
                 cell.setHighlight(true);
                 this.drawPathSegment();
                 
-                // Record move for scoring
+                // Record move for scoring AND for moves counter
                 this.scoreManagerCmp.recordMove();
+                this.timerManagerCmp.addMove(); // Add to total moves counter
                 
                 cc.log(`Added path point at (${cell.getRow()}, ${cell.getCol()})`);
                 

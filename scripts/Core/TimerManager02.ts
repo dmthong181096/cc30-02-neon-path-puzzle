@@ -18,26 +18,25 @@ export class TimerManager02 extends Subscriber02 {
     @property({ displayName: "Level Timer Label", type: cc.Label })
     levelTimerLabel: cc.Label = null;
     
-    @property({ displayName: "Game Timer Label", type: cc.Label })
-    gameTimerLabel: cc.Label = null;
+    @property({ displayName: "Moves Counter Label", type: cc.Label })
+    movesCounterLabel: cc.Label = null;
     
     private timers: Map<string, TimerData> = new Map();
-    private gameStartTime: number = 0;
     private levelStartTime: number = 0;
     private isPaused: boolean = false;
     private pausedTime: number = 0;
     private totalPausedTime: number = 0;
     private lastAnimatedSecond: number = -1; // Track last animated second to avoid duplicates
+    private totalMoves: number = 0; // Track total moves across all levels
     
     // Timer IDs
     private readonly LEVEL_TIMER_ID = 'level-timer';
-    private readonly GAME_TIMER_ID = 'game-timer';
     
     // Direct callback for level time expired (bypass event system)
     private levelTimeExpiredCallback: (levelNumber: number) => void = null;
     
     onLoad(): void {
-        this.initGameTimer();
+        // No need to init game timer anymore
     }
     
     start(): void {
@@ -76,21 +75,25 @@ export class TimerManager02 extends Subscriber02 {
         this.updateTimerDisplays();
     }
     
-    // Initialize game timer (total play time)
-    private initGameTimer(): void {
-        this.gameStartTime = Date.now();
-        this.totalPausedTime = 0;
-        
-        this.addTimer(this.GAME_TIMER_ID, {
-            id: this.GAME_TIMER_ID,
-            startTime: this.gameStartTime,
-            isPaused: false,
-            onTick: (elapsed) => {
-                this.fireEvent('game-time-tick', { elapsed });
-            }
-        });
+    // Add move to counter
+    addMove(): void {
+        this.totalMoves++;
+        cc.log(`📊 TimerManager02: Move added - Total moves: ${this.totalMoves}`);
+        this.updateMovesDisplay();
     }
     
+    // Get total moves
+    getTotalMoves(): number {
+        return this.totalMoves;
+    }
+    
+    // Reset moves counter
+    resetMoves(): void {
+        cc.log(`🔄 TimerManager02: Resetting moves counter from ${this.totalMoves} to 0`);
+        this.totalMoves = 0;
+        this.updateMovesDisplay();
+    }
+        
     // Set direct callback for level time expired (bypass event system)
     setLevelTimeExpiredCallback(callback: (levelNumber: number) => void): void {
         cc.log(`🔗 TimerManager02: Setting direct callback for level time expired`);
@@ -254,11 +257,6 @@ export class TimerManager02 extends Subscriber02 {
         return this.getRemaining(this.LEVEL_TIMER_ID);
     }
     
-    // Get total game time
-    getGameTime(): number {
-        return this.getElapsed(this.GAME_TIMER_ID);
-    }
-    
     // Format time as MM:SS or HH:MM:SS
     formatTime(seconds: number, showHours: boolean = false): string {
         const hours = Math.floor(seconds / 3600);
@@ -295,12 +293,11 @@ export class TimerManager02 extends Subscriber02 {
             const levelTimeRemaining = this.getLevelTime();
             const seconds = Math.ceil(levelTimeRemaining); // Round up to show full seconds
             
-            this.levelTimerLabel.string = seconds.toString();
+            this.levelTimerLabel.string = seconds<10 ? `0${seconds.toString()}` : seconds.toString();
             
             // Change color when time is running low
             if (seconds <= 10) {
-                this.levelTimerLabel.color = cc.Color.RED;
-                // Trigger zoom animation for countdown
+                this.levelTimerLabel.color =  new cc.Color("FF3131");
                 this.playCountdownAnimation(seconds);
             } else if (seconds <= 30) {
                 this.levelTimerLabel.color = cc.Color.YELLOW;
@@ -309,11 +306,14 @@ export class TimerManager02 extends Subscriber02 {
             }
         }
         
-        // Update game timer display (elapsed)
-        if (this.gameTimerLabel) {
-            const gameTime = this.getGameTime();
-            this.gameTimerLabel.string = this.formatTime(gameTime, true);
-        }
+        // Update moves display
+        this.updateMovesDisplay();
+    }
+    
+    // Update moves counter display
+    private updateMovesDisplay(): void {
+        let totalMoves = this.totalMoves < 10 ? `0${this.totalMoves}` : `${this.totalMoves}`;
+        this.movesCounterLabel.string = totalMoves;
     }
     
     private playCountdownAnimation(seconds: number): void {
@@ -374,7 +374,7 @@ export class TimerManager02 extends Subscriber02 {
         this.clearAllTimers();
         this.isPaused = false;
         this.totalPausedTime = 0;
-        this.initGameTimer();
+        this.resetMoves(); // Reset moves counter when starting new game
     }
     
     onDestroy(): void {

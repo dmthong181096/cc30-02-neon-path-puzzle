@@ -48,7 +48,7 @@ export class LevelManager02 extends cc.Component {
     
     private updateLevelDisplay(): void {
         if (this.levelDisplayLabel && this.levelDisplayLabel.isValid) {
-            this.levelDisplayLabel.string = `Level ${this.currentLevel}`;
+            this.levelDisplayLabel.string = `${this.currentLevel}`;
             cc.log(`✅ LevelManager02: Level display text updated to "${this.levelDisplayLabel.string}"`);
             
             // Add level up animation
