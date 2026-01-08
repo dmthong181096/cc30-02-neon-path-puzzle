@@ -1,5 +1,5 @@
 
-import { BaseSubscriber, BaseAssetsManager, BaseDataStore, BaseConfig, BaseGameDirector, BaseLoadingScene } from '../../../common';
+import { BaseSubscriber, BaseAssetsManager, BaseDataStore, BaseConfig, BaseGameDirector, BaseLoadingScene, BasePopupItem } from '../../../common';
 
 
 // Export all base classes for easy access
@@ -9,7 +9,8 @@ export const Declaration = {
     BaseDataStore,
     BaseConfig,
     BaseGameDirector,
-    BaseLoadingScene
+    BaseLoadingScene,
+    BasePopupItem
 };
 
 

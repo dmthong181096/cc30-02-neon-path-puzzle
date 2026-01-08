@@ -10,11 +10,13 @@ import { GameWriter02 } from './GameWriter02';
 import { GameState02, GameResultEvent, CellPosition, NodeData } from '../Data/GameState02';
 import { GridCell02 } from '../UI/Components/GridCell02';
 import { NodeItem02 } from '../UI/Components/NodeItem02';
-
+import Declaration02 from '../Declaration02';
+import { Subscriber02 } from '../Helper/Subscriber02';
+const {BaseSubscriber} = Declaration02
 const { ccclass, property } = cc._decorator;
 
 @ccclass('GameDirector02')
-export class GameDirector02 extends cc.Component {
+export class GameDirector02 extends Subscriber02 {
 
     @property({displayName: "Board Manager", type: cc.Node})
     boardManager: cc.Node = null;
@@ -59,13 +61,13 @@ export class GameDirector02 extends cc.Component {
     private occupiedCells: Set<string> = new Set();
     private lastGameResult: 'win' | 'lose' | null = null;
 
-    protected onLoad(): void {
+    onLoad(): void {
         this.initComponent();
         this.setupEvents();
         this.setupKeyboardEvents();
     }
     
-    protected start(): void {
+    start(): void {
         this.initUI();
         this.startGame();
     }
@@ -721,6 +723,9 @@ export class GameDirector02 extends cc.Component {
         this.resultManagerCmp.showGameOverAnimationWithStats(currentScore, currentLevel, totalMoves, () => {
             cc.log(`🔄 GameDirector02: Restarting game after cyberpunk game over...`);
             this.restartGame();
+        }, () => {
+            cc.log(`📱 GameDirector02: Main menu callback from lose screen`);
+            this.goToMainMenu();
         });
     }
     
@@ -750,6 +755,9 @@ export class GameDirector02 extends cc.Component {
             this.resultManagerCmp.showWinAnimationWithScore(currentLevel, scoreBreakdown, () => {
                 cc.log(`📞 GameDirector02: Win animation callback triggered - calling nextLevel()`);
                 this.nextLevel();
+            }, () => {
+                cc.log(`📱 GameDirector02: Main menu callback from win screen`);
+                this.goToMainMenu();
             });
         }, 0.5);
         
@@ -900,6 +908,13 @@ export class GameDirector02 extends cc.Component {
         this.scoreManagerCmp.resetScore(); // Reset score for new game
         this.timerManagerCmp.resetForNewGame(); // Reset timers for new game
         this.resetGameState(); // generateLevel() will be called in callback
+    }
+    
+    private goToMainMenu(): void {
+        cc.log('📱 GameDirector02: Going to main menu');
+        // TODO: Implement main menu navigation
+        // For now, just restart the game
+        this.restartGame();
     }
     
     onDestroy(): void {

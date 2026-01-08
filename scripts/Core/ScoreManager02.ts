@@ -158,7 +158,8 @@ export class ScoreManager02 extends Subscriber02 {
         
         // Update display after high score check
         this.updateScoreDisplay();
-        
+        this.getDataStore().setCurrentScore(this.currentScore);
+
         this.fireEvent('score-updated', { 
             score: this.currentScore, 
             points: points,

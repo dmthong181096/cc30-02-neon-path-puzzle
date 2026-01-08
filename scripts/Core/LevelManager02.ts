@@ -1,9 +1,11 @@
 import * as cc from 'cc';
-
+import Declaration02 from '../Declaration02';
+import { Subscriber02 } from '../Helper/Subscriber02';
+const {BaseSubscriber} = Declaration02;
 const { ccclass, property } = cc._decorator;
 
 @ccclass('LevelManager02')
-export class LevelManager02 extends cc.Component {
+export class LevelManager02 extends Subscriber02 {
     
     @property({ displayName: "Level Display Label", type: cc.Label })
     levelDisplayLabel: cc.Label = null;
@@ -42,6 +44,7 @@ export class LevelManager02 extends cc.Component {
     
     setLevel(level: number): void {
         this.currentLevel = level;
+        this.getDataStore().setCurrentLevel(level);
         this.updateLevelDisplay();
         cc.log(`LevelManager02: Set to Level ${this.currentLevel}`);
     }

@@ -10,6 +10,9 @@ export class DataStore02 extends BaseDataStore {
     
 
 
+    private currentScore = 0;
+    private currentLevel = 1;
+
     protected onLoad(): void {
         // super.onLoad()
         this.gameID = "02";
@@ -25,4 +28,20 @@ export class DataStore02 extends BaseDataStore {
     getHighScore(): void {
         return this.getLocalStoreByKey(HIGH_SCORE)
     }
+
+    setCurrentScore(score: number) {
+        this.currentScore = score;
+    }   
+    getCurrentScore(): number {
+        return this.currentScore;
+    }
+
+    getCurrentLevel(): number {
+        return this.currentLevel;
+    }
+    setCurrentLevel(level: number) {
+        this.currentLevel = level;
+    } 
+
+
 }

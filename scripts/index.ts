@@ -16,6 +16,8 @@ export { GridCell02 } from './UI/Components/GridCell02';
 export { NodeItem02 } from './UI/Components/NodeItem02';
 export { PathLine02 } from './UI/Components/PathLine02';
 export { LoadingScene02 } from './UI/LoadingScene02';
+export { LoseUIManager02 } from './UI/Components/LoseUIManager02';
+export { WinUIManager02 } from './UI/Components/WinUIManager02';
 
 // System Managers
 export { InputManager02 } from './System/InputManager02';
