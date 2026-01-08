@@ -25,8 +25,8 @@ export class DataStore02 extends BaseDataStore {
         this.setLocalStoreByKey(HIGH_SCORE, score)
     }
 
-    getHighScore(): void {
-        return this.getLocalStoreByKey(HIGH_SCORE)
+    getHighScore(): number {
+        return this.getLocalStoreByKey(HIGH_SCORE);
     }
 
     setCurrentScore(score: number) {
