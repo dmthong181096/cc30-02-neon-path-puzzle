@@ -219,6 +219,8 @@ export class ScoreManager02 extends Subscriber02 {
         efficiencyBonus: number,
         perfectBonus: number,
         levelMultiplier: number,
+        levelScore: number,
+        currentGameScore: number,
         totalScore: number
     } {
         const baseScore = this.BASE_SCORE_PER_LEVEL;
@@ -233,7 +235,11 @@ export class ScoreManager02 extends Subscriber02 {
         
         const perfectBonus = (this.pathsCompleted === totalPairs && this.totalMoves <= expectedMoves * 0.8) ? 300 : 0;
         
-        const totalScore = Math.floor(baseScore * levelMultiplier) + timeBonus + efficiencyBonus + perfectBonus;
+        const levelScore = Math.floor(baseScore * levelMultiplier) + timeBonus + efficiencyBonus + perfectBonus;
+        const currentGameScore = this.currentScore; // Score accumulated in current game
+        const totalScore = currentGameScore + timeBonus; // Current game score + time bonus
+        
+        cc.log(`📊 ScoreManager02: Score breakdown - Game: ${currentGameScore}, Time Bonus: ${timeBonus}, Total: ${totalScore}`);
         
         return {
             baseScore: Math.floor(baseScore * levelMultiplier),
@@ -241,6 +247,8 @@ export class ScoreManager02 extends Subscriber02 {
             efficiencyBonus,
             perfectBonus,
             levelMultiplier,
+            levelScore,
+            currentGameScore,
             totalScore
         };
     }

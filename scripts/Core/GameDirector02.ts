@@ -299,7 +299,7 @@ export class GameDirector02 extends Subscriber02 {
             this.timerManagerCmp.registerEvent('countdown-tick', this.boundOnCountdownTick);
             
             // Start level countdown timer (10 seconds for testing)
-            this.timerManagerCmp.startLevelTimer(currentLevel, 10);
+            this.timerManagerCmp.startLevelTimer(currentLevel, 60);
         } else {
             cc.error(`❌ GameDirector02: NodeManager component not found!`);
         }
@@ -752,7 +752,8 @@ export class GameDirector02 extends Subscriber02 {
         // 3. Show win text with score breakdown via ResultManager
         this.scheduleOnce(() => {
             cc.log(`📝 GameDirector02: Showing win animation with score via ResultManager...`);
-            this.resultManagerCmp.showWinAnimationWithScore(currentLevel, scoreBreakdown, () => {
+            const totalMoves = this.timerManagerCmp.getTotalMoves();
+            this.resultManagerCmp.showWinAnimationWithScore(currentLevel, scoreBreakdown, totalMoves, () => {
                 cc.log(`📞 GameDirector02: Win animation callback triggered - calling nextLevel()`);
                 this.nextLevel();
             }, () => {

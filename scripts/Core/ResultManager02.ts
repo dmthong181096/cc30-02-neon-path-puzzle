@@ -21,17 +21,15 @@ export class ResultManager02 extends cc.Component {
     }
     
     // Show win screen with score
-    showWinAnimationWithScore(level: number, scoreData: any, onNextLevel?: () => void, onMainMenu?: () => void): void {
-        cc.log(`🎉 ResultManager02: Showing win screen - Level: ${level}, Score: ${scoreData.totalScore}`);
+    showWinAnimationWithScore(level: number, scoreData: any, moves: number, onNextLevel?: () => void, onMainMenu?: () => void): void {
+        cc.log(`🎉 ResultManager02: Showing win screen - Level: ${level}, Score: ${scoreData.totalScore}, Moves: ${moves}`);
         
         if (this.winUIManager) {
-            this.winUIManager.show(level, scoreData, onNextLevel, onMainMenu);
+            const data = { level, scoreData, moves, onNextLevel, onMainMenu };
+            this.winUIManager.showPopup(true, data);
         } else {
-            cc.error(`❌ ResultManager02: WinUIManager not assigned!`);
-            // Fallback - call next level directly
-            if (onNextLevel) {
-                this.scheduleOnce(onNextLevel, 2.0);
-            }
+            cc.error(`❌ ResultManager02: WinUIManager not assigned! Game will wait for manual restart.`);
+            // No automatic fallback - wait for user action
         }
     }
     
@@ -42,7 +40,7 @@ export class ResultManager02 extends cc.Component {
         }
         
         if (this.winUIManager) {
-            this.winUIManager.hide();
+            this.winUIManager.hidePopup();
         }
     }
     
@@ -52,6 +50,7 @@ export class ResultManager02 extends cc.Component {
     }
     
     showWinAnimation(level: number, onComplete?: () => void): void {
-        this.showWinAnimationWithScore(level, { totalScore: 0 }, onComplete);
+        // Legacy method - now waits for user action instead of auto-completing
+        this.showWinAnimationWithScore(level, { totalScore: 0 }, 0, onComplete);
     }
 }

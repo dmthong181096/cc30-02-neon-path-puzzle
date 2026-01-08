@@ -5632,7 +5632,7 @@
       "__id__": 145
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 147
@@ -7646,7 +7646,7 @@
         "__id__": 204
       }
     ],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 283
@@ -11062,7 +11062,7 @@
     "_id": "23q0Vofl1C3YK3cvHw1wo5"
   },
   {
-    "__type__": "e61a3tMnqVEUpdoFSSnsMgU",
+    "__type__": "bce74YSXGhC/psIUR9+Yyc6",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -11077,19 +11077,29 @@
     "overlay": {
       "__id__": 199
     },
+    "levelLabel": {
+      "__id__": 272
+    },
     "scoreLabel": {
       "__id__": 230
     },
-    "levelLabel": {
-      "__id__": 255
+    "totalScoreLabel": {
+      "__id__": 279
     },
-    "retryButton": {
+    "movesLabel": {
+      "__id__": 221
+    },
+    "timeBonusLabel": {
+      "__id__": 239
+    },
+    "efficiencyBonusLabel": null,
+    "nextLevelButton": {
       "__id__": 256
     },
     "mainMenuButton": {
       "__id__": 263
     },
-    "_id": "507tfZWlRDT61olDYl6B7O"
+    "_id": "4fzJs/JzdHlI+uQohEYBG4"
   },
   {
     "__type__": "cc.UITransform",
@@ -11126,7 +11136,9 @@
     "loseUIManager": {
       "__id__": 197
     },
-    "winUIManager": null,
+    "winUIManager": {
+      "__id__": 284
+    },
     "_id": "f1wON+ja5ARZAWCRRbDADc"
   },
   {

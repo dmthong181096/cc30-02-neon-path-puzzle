@@ -1,18 +1,22 @@
 import * as cc from 'cc';
-
+import Declaration02 from '../../Declaration02'
+const {BasePopupItem} = Declaration02;
 const { ccclass, property } = cc._decorator;
 
 @ccclass('WinUIManager02')
-export class WinUIManager02 extends cc.Component {
-    
-    @property({ displayName: "Win Panel", type: cc.Node })
-    winPanel: cc.Node = null;
+export class WinUIManager02 extends BasePopupItem {
     
     @property({ displayName: "Level Label", type: cc.Label })
     levelLabel: cc.Label = null;
     
     @property({ displayName: "Score Label", type: cc.Label })
     scoreLabel: cc.Label = null;
+    
+    @property({ displayName: "Total Score Label", type: cc.Label })
+    totalScoreLabel: cc.Label = null;
+    
+    @property({ displayName: "Moves Label", type: cc.Label })
+    movesLabel: cc.Label = null;
     
     @property({ displayName: "Time Bonus Label", type: cc.Label })
     timeBonusLabel: cc.Label = null;
@@ -28,35 +32,37 @@ export class WinUIManager02 extends cc.Component {
     
     private onNextLevelCallback: () => void = null;
     private onMainMenuCallback: () => void = null;
-    
-    protected onLoad(): void {
-        this.hide();
+
+    init(): void {
+        super.init();
         this.setupButtons();
     }
     
     private setupButtons(): void {
-        if (this.nextLevelButton) {
-            this.nextLevelButton.on(cc.Node.EventType.TOUCH_END, this.onNextLevelClicked, this);
-        }
-        
-        if (this.mainMenuButton) {
-            this.mainMenuButton.on(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
-        }
+        this.nextLevelButton.on(cc.Node.EventType.TOUCH_END, this.onNextLevelClicked, this);
+        this.mainMenuButton.on(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
     }
-    
-    public show(level: number, scoreData: any, onNextLevel?: () => void, onMainMenu?: () => void): void {
-        cc.log(`🎉 WinUIManager02: Showing win screen - Level: ${level}, Score: ${scoreData.totalScore}`);
+
+    updateUI(data): void {
+        const { level, scoreData, moves, onNextLevel, onMainMenu } = data;
         
-        this.onNextLevelCallback = onNextLevel;
-        this.onMainMenuCallback = onMainMenu;
-        
-        // Update labels
         if (this.levelLabel) {
             this.levelLabel.string = `LEVEL ${level}`;
         }
         
+        // Display current game score (score accumulated in this game)
         if (this.scoreLabel) {
-            this.scoreLabel.string = scoreData.totalScore.toLocaleString();
+            this.scoreLabel.string = scoreData.currentGameScore.toLocaleString();
+        }
+        
+        // Display total score (current game score + time bonus)
+        if (this.totalScoreLabel) {
+            this.totalScoreLabel.string = scoreData.totalScore.toLocaleString();
+        }
+        
+        // Display moves count
+        if (this.movesLabel) {
+            this.movesLabel.string = moves ? moves.toString() : "0";
         }
         
         if (this.timeBonusLabel) {
@@ -67,32 +73,21 @@ export class WinUIManager02 extends cc.Component {
             this.efficiencyBonusLabel.string = scoreData.efficiencyBonus ? `+${scoreData.efficiencyBonus}` : "+0";
         }
         
-        // Show panel with animation
-        if (this.winPanel) {
-            this.winPanel.active = true;
-            this.winPanel.setScale(0, 0, 1);
-            
-            cc.tween(this.winPanel)
-                .to(0.3, { scale: cc.v3(1.1, 1.1, 1) }, { easing: 'backOut' })
-                .to(0.1, { scale: cc.v3(1, 1, 1) }, { easing: 'sineOut' })
-                .start();
-        }
+        this.onNextLevelCallback = onNextLevel;
+        this.onMainMenuCallback = onMainMenu;
+        
+        cc.log(`🎉 WinUIManager02: Updated UI - Game Score: ${scoreData.currentGameScore}, Moves: ${moves}, Time Bonus: ${scoreData.timeBonus}, Total: ${scoreData.totalScore}`);
     }
     
-    public hide(): void {
-        if (this.winPanel) {
-            cc.tween(this.winPanel)
-                .to(0.2, { scale: cc.v3(0, 0, 1) }, { easing: 'sineIn' })
-                .call(() => {
-                    this.winPanel.active = false;
-                })
-                .start();
-        }
+    public showPopup(isAnim = true, data): void {
+        // Update labels
+        this.updateUI(data);
+        super.showPopup(isAnim);
     }
     
     private onNextLevelClicked(): void {
         cc.log(`▶️ WinUIManager02: Next level button clicked`);
-        this.hide();
+        this.hidePopup();
         
         if (this.onNextLevelCallback) {
             this.scheduleOnce(() => {
@@ -103,7 +98,7 @@ export class WinUIManager02 extends cc.Component {
     
     private onMainMenuClicked(): void {
         cc.log(`📱 WinUIManager02: Main menu button clicked`);
-        this.hide();
+        this.hidePopup();
         
         if (this.onMainMenuCallback) {
             this.scheduleOnce(() => {
@@ -112,13 +107,8 @@ export class WinUIManager02 extends cc.Component {
         }
     }
     
-    protected onDestroy(): void {
-        if (this.nextLevelButton) {
-            this.nextLevelButton.off(cc.Node.EventType.TOUCH_END, this.onNextLevelClicked, this);
-        }
-        
-        if (this.mainMenuButton) {
-            this.mainMenuButton.off(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
-        }
+    onDestroy(): void {
+        this.nextLevelButton.off(cc.Node.EventType.TOUCH_END, this.onNextLevelClicked, this);
+        this.mainMenuButton.off(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
     }
 }
