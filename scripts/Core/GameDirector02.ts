@@ -124,16 +124,13 @@ export class GameDirector02 extends Subscriber02 {
         this.boundOnCountdownTick = this.onCountdownTick.bind(this);
         
         // Set direct callback for timer instead of using event system
-        cc.log(`🔗 GameDirector02: Setting direct timer callback instead of event listeners...`);
         this.timerManagerCmp.setLevelTimeExpiredCallback((levelNumber: number) => {
-            cc.log(`📞 GameDirector02: Direct callback received for level ${levelNumber} time expired`);
             this.onLevelTimeExpired({ levelNumber });
         });
         
         // Still register other timer events (these are less critical)
         this.timerManagerCmp.registerEvent('time-warning', this.boundOnTimeWarning);
         this.timerManagerCmp.registerEvent('countdown-tick', this.boundOnCountdownTick);
-        cc.log(`✅ GameDirector02: Timer callback and events set up`);
     }
     
     private setupKeyboardEvents(): void {
@@ -151,13 +148,10 @@ export class GameDirector02 extends Subscriber02 {
     private stopCurrentPath(): void {
         if (this.isDrawingPath && this.currentPath.length > 1) {
             // Save as partial path without clearing others
-            cc.log(`⏹️ User stopped path - saving as partial path`);
             this.savePartialPathWithoutClear();
-            cc.log('Path stopped by user - saved as partial path');
         } else {
             // Cancel if too short
             this.cancelCurrentPath();
-            cc.log('Path cancelled - too short to save');
         }
     }
     
@@ -167,8 +161,6 @@ export class GameDirector02 extends Subscriber02 {
         this.selectedStartNode = null;
         this.clearCurrentPathHighlights();
         this.currentPath = [];
-        cc.log('Current path cancelled');
-        
         // Check game result after cancelling path
         this.scheduleOnce(() => {
             this.requestGameResultCheck();
@@ -242,8 +234,7 @@ export class GameDirector02 extends Subscriber02 {
         
         // Record level completion and get score (pass elapsed time in milliseconds)
         const levelScore = this.scoreManagerCmp.recordLevelCompletion(currentLevel, totalPairs);
-        
-        cc.log(`🎉 GameDirector02: WIN - Level ${currentLevel} completed with ${remainingTime.toFixed(1)}s remaining! Score: +${levelScore}`);
+    
         this.playWinAnimation();
     }
     
@@ -251,29 +242,22 @@ export class GameDirector02 extends Subscriber02 {
         if (this.lastGameResult !== null) return;
         
         this.lastGameResult = 'lose';
-        
-        cc.log(`💀 GameDirector02: Received LOSE event!`);
         this.triggerGameOver();
     }
     
     private onGameContinue(): void {
-        cc.log(`✅ GameDirector02: Game continues...`);
+
     }
     
     // Timer event handlers
     private onLevelTimeExpired(data: { levelNumber: number }): void {
-        cc.log(`⏰ GameDirector02: Level ${data.levelNumber} time expired - GAME OVER!`);
-        cc.log(`🔍 DEBUG: lastGameResult before = ${this.lastGameResult}`);
-        
         // Trigger game over due to time limit
         this.lastGameResult = 'lose';
-        cc.log(`🔍 DEBUG: lastGameResult after = ${this.lastGameResult}`);
         this.triggerGameOver();
     }
     
     private onTimeWarning(data: { remaining: number }): void {
-        // Could add visual/audio warning here
-        // this.showTimeWarning(data.remaining);
+
     }
     
     private onCountdownTick(data: { seconds: number }): void {
@@ -285,13 +269,7 @@ export class GameDirector02 extends Subscriber02 {
     }
     
     private playUrgentCountdownEffects(seconds: number): void {
-        // Could add screen shake, sound effects, particle effects, etc.
-        
-        // Example: Screen shake effect (if you have a camera shake system)
-        // this.cameraShake.shake(0.1, 0.05);
-        
-        // Example: Play urgent sound
-        // this.audioManager.playSound('countdown-urgent');
+     
     }
 
     initUI() {
@@ -308,17 +286,11 @@ export class GameDirector02 extends Subscriber02 {
         const currentLevel = this.levelManagerCmp.getCurrentLevel();
         
         if (this.nodeManagerCmp) {
-            this.nodeManagerCmp.generateRandomNodes();
-            
-            const nodeCount = this.nodeManagerCmp.getNodes().length;
-            const pairCount = this.nodeManagerCmp.getNumberOfPairs();
-            cc.log(`✅ Level ${currentLevel} generated - ${pairCount} pairs (${nodeCount} nodes total)`);
-            
+            this.nodeManagerCmp.generateRandomNodes();            
             // Initialize score tracking for this level
             this.scoreManagerCmp.initLevel(currentLevel);
             
             // RE-REGISTER timer events before starting timer (in case they were removed)
-            cc.log(`🔄 GameDirector02: Re-registering timer events before starting timer...`);
             this.timerManagerCmp.registerEvent('time-warning', this.boundOnTimeWarning);
             this.timerManagerCmp.registerEvent('countdown-tick', this.boundOnCountdownTick);
             
@@ -348,11 +320,9 @@ export class GameDirector02 extends Subscriber02 {
             this.currentPath = [cell];
             
             cell.setSelected(true);
-            cc.log(`Started path from node ${node.getNodeNumber()}`);
         } else {
             // Check if clicking the same start node to cancel
             if (this.selectedStartNode && node === this.selectedStartNode) {
-                cc.log(`🚫 User clicked same start node - cancelling path`);
                 this.cancelCurrentPath();
                 return;
             }
@@ -367,21 +337,13 @@ export class GameDirector02 extends Subscriber02 {
                     // Valid end node - complete the path
                     this.currentPath.push(cell);
                     this.finishPath();
-                    cc.log(`Completed path for node ${node.getNodeNumber()}`);
-                } else {
-                    cc.log(`Cannot reach node ${node.getNodeNumber()} - not adjacent to current path`);
-                }
+                } 
             } else {
-                // Different node clicked - save current partial path and start new one
-                cc.log(`🔄 Switching from node ${this.selectedStartNode.getNodeNumber()} to node ${node.getNodeNumber()}`);
-                
                 // Save current path as partial (if it has content)
                 if (this.currentPath.length > 1) {
-                    cc.log(`💾 Saving partial path for node ${this.selectedStartNode.getNodeNumber()}`);
                     this.savePartialPathWithoutClear();
                 } else {
                     // Just cancel current path if too short
-                    cc.log(`❌ Cancelling short path for node ${this.selectedStartNode.getNodeNumber()}`);
                     this.cancelCurrentPath();
                 }
                 
@@ -390,7 +352,6 @@ export class GameDirector02 extends Subscriber02 {
                 this.isDrawingPath = true;
                 this.currentPath = [cell];
                 cell.setSelected(true);
-                cc.log(`✅ Started new path from node ${node.getNodeNumber()}`);
             }
         }
     }
@@ -411,13 +372,11 @@ export class GameDirector02 extends Subscriber02 {
             // Check if cell is already occupied by completed paths
             const cellKey = `${cell.getRow()},${cell.getCol()}`;
             if (this.occupiedCells.has(cellKey)) {
-                cc.log(`Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by completed path`);
                 return;
             }
             
             // Check if cell is occupied by ANY partial paths (cannot draw over any line)
             if (this.isCellOccupiedByAnyPartialPath(cell)) {
-                cc.log(`Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by partial path - cannot draw over`);
                 return;
             }
             
@@ -426,7 +385,6 @@ export class GameDirector02 extends Subscriber02 {
                 const lastCell = this.currentPath[this.currentPath.length - 1];
                 if (lastCell.getRow() === cell.getRow() && lastCell.getCol() === cell.getCol()) {
                     // Double click on last cell - stop path without clearing others
-                    cc.log(`🔄 Double-click detected on last cell - stopping path`);
                     this.savePartialPathWithoutClear();
                     return;
                 }
@@ -442,14 +400,11 @@ export class GameDirector02 extends Subscriber02 {
                 this.scoreManagerCmp.recordMove();
                 this.timerManagerCmp.addMove(); // Add to total moves counter
                 
-                cc.log(`Added path point at (${cell.getRow()}, ${cell.getCol()})`);
                 
                 // Check game result immediately after adding each cell
                 this.scheduleOnce(() => {
                     this.requestGameResultCheck();
                 }, 0.05); // Very short delay to ensure drawing is complete
-            } else {
-                cc.log(`Invalid path move to (${cell.getRow()}, ${cell.getCol()})`);
             }
         } else {
             // Not drawing - check if clicking on a partial path to continue
@@ -471,9 +426,7 @@ export class GameDirector02 extends Subscriber02 {
             const isInPartialPath = partialPath.some(pathCell => 
                 pathCell.getRow() === cell.getRow() && pathCell.getCol() === cell.getCol()
             );
-            
             if (isInPartialPath) {
-                cc.log(`🚫 Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by pair ${pairNumber}'s partial path`);
                 return true; // Cell is occupied by another pair's partial path
             }
         }
@@ -492,7 +445,6 @@ export class GameDirector02 extends Subscriber02 {
             );
             
             if (isInOwnPartialPath) {
-                cc.log(`✅ Cell (${cell.getRow()}, ${cell.getCol()}) is in our own partial path - can overwrite`);
                 return true;
             }
         }
@@ -507,11 +459,9 @@ export class GameDirector02 extends Subscriber02 {
             if (lastCell.getRow() === cell.getRow() && lastCell.getCol() === cell.getCol()) {
                 // Continue this partial path
                 this.continuePartialPath(nodeNumber);
-                cc.log(`Continuing partial path for node ${nodeNumber}`);
                 return;
             }
         }
-        cc.log('No partial path to continue from this cell');
     }
     
     private isValidPathMove(newCell: GridCell02): boolean {
@@ -551,7 +501,6 @@ export class GameDirector02 extends Subscriber02 {
             );
             
             if (isInPartialPath) {
-                cc.log(`🚫 Cell (${cell.getRow()}, ${cell.getCol()}) is occupied by pair ${pairNumber}'s partial path - cannot draw over`);
                 return true; // Cell is occupied by any partial path
             }
         }
@@ -598,7 +547,7 @@ export class GameDirector02 extends Subscriber02 {
         });
         
         // 🎉 PLAY COMPLETION ANIMATIONS
-        cc.log(`🎉 GameDirector02: Playing completion animations for pair ${nodeNumber}`);
+
         
         // 1. Animate the pair of nodes
         this.nodeManagerCmp.playPairCompletedAnimation(nodeNumber);
@@ -612,9 +561,7 @@ export class GameDirector02 extends Subscriber02 {
         this.selectedStartNode = null;
         this.clearCurrentPathHighlights();
         this.currentPath = [];
-        
-        cc.log(`✨ Path completed for node ${nodeNumber} with glow effect! Total completed: ${this.completedPaths.size}`);
-        
+            
         // Check game result (win/lose) via GameWriter
         this.requestGameResultCheck();
     }
@@ -627,7 +574,6 @@ export class GameDirector02 extends Subscriber02 {
             // Only clear if we're overwriting the same node's partial path
             const existingPartialPath = this.partialPaths.get(nodeNumber);
             if (existingPartialPath) {
-                cc.log(`Overwriting existing partial path for node ${nodeNumber}`);
                 this.clearPartialPath(nodeNumber);
             }
             
@@ -637,7 +583,6 @@ export class GameDirector02 extends Subscriber02 {
             // Keep the lines visible but mark them as partial
             this.pathManagerCmp.savePartialPathForNode(nodeNumber);
             
-            cc.log(`Saved partial path for node ${nodeNumber} with ${this.currentPath.length} cells`);
         }
         
         // Reset current drawing state
@@ -655,17 +600,11 @@ export class GameDirector02 extends Subscriber02 {
     private savePartialPathWithoutClear(): void {
         if (this.currentPath.length > 1 && this.selectedStartNode) {
             const nodeNumber = this.selectedStartNode.getNodeNumber();
-            
-            // NEVER clear existing partial paths - just add new one
-            cc.log(`💾 Saving partial path for node ${nodeNumber} (keeping all other partial paths)`);
-            
             // Save current path as partial
             this.partialPaths.set(nodeNumber, [...this.currentPath]);
             
             // Keep the lines visible but mark them as partial
             this.pathManagerCmp.savePartialPathForNode(nodeNumber);
-            
-            cc.log(`✅ Saved partial path for node ${nodeNumber} with ${this.currentPath.length} cells`);
         }
         
         // Reset current drawing state
@@ -692,7 +631,6 @@ export class GameDirector02 extends Subscriber02 {
             // Highlight the path
             this.currentPath.forEach(cell => cell.setHighlight(true));
             
-            cc.log(`Continuing partial path for node ${nodeNumber} from ${this.currentPath.length} cells`);
         }
     }
     
@@ -709,7 +647,6 @@ export class GameDirector02 extends Subscriber02 {
             this.pathManagerCmp.clearPartialPathForNode(nodeNumber);
             
             this.partialPaths.delete(nodeNumber);
-            cc.log(`Cleared partial path for node ${nodeNumber}`);
         }
     }
     
@@ -734,28 +671,19 @@ export class GameDirector02 extends Subscriber02 {
     }
     
     private triggerGameOver(): void {
-        cc.log(`💀 GameDirector02: GAME OVER - No solution possible!`);
-        
         // Get current game stats for cyberpunk display
         const currentScore = this.scoreManagerCmp.getCurrentScore();
         const currentLevel = this.levelManagerCmp.getCurrentLevel();
         const totalMoves = this.timerManagerCmp.getTotalMoves();
-        
-        cc.log(`📊 GameDirector02: Game Over Stats - Score: ${currentScore}, Level: ${currentLevel}, Moves: ${totalMoves}`);
-        
         // Show cyberpunk game over animation with stats
         this.resultManagerCmp.showGameOverAnimationWithStats(currentScore, currentLevel, totalMoves, () => {
-            cc.log(`🔄 GameDirector02: Restarting game after cyberpunk game over...`);
             this.restartGame();
         }, () => {
-            cc.log(`📱 GameDirector02: Main menu callback from lose screen`);
             this.goToMainMenu();
         });
     }
     
     private onLevelChanged(newLevel: number): void {
-        cc.log(`📡 GameDirector02: RECEIVED LEVEL CHANGED EVENT - New Level: ${newLevel}`);
-        // Level display is handled by LevelManager02
     }
     
     private playWinAnimation(): void {
@@ -763,11 +691,7 @@ export class GameDirector02 extends Subscriber02 {
         const totalPairs = this.nodeManagerCmp.getNumberOfPairs();
         const remainingTime = this.timerManagerCmp.getLevelTime(); // Get remaining time
         const elapsedTime = 60 - remainingTime; // Calculate elapsed time
-        
-        cc.log(`🎉 GameDirector02: STARTING WIN ANIMATION for Level ${currentLevel}...`);
-        
         // 1. Flash all completed paths
-        cc.log(`✨ GameDirector02: Flashing completed paths...`);
         this.flashCompletedPaths();
         
         // 2. Get score breakdown for display (pass elapsed time in milliseconds)
@@ -775,20 +699,17 @@ export class GameDirector02 extends Subscriber02 {
         
         // 3. Show win text with score breakdown via ResultManager
         this.scheduleOnce(() => {
-            cc.log(`📝 GameDirector02: Showing win animation with score via ResultManager...`);
+            
             const totalMoves = this.timerManagerCmp.getTotalMoves();
             this.resultManagerCmp.showWinAnimationWithScore(currentLevel, scoreBreakdown, totalMoves, () => {
-                cc.log(`📞 GameDirector02: Win animation callback triggered - calling nextLevel()`);
                 this.nextLevel();
             }, () => {
-                cc.log(`📱 GameDirector02: Main menu callback from win screen`);
                 this.goToMainMenu();
             });
         }, 0.5);
         
         // 4. Particle effect on all nodes
         this.scheduleOnce(() => {
-            cc.log(`🎆 GameDirector02: Playing node particle effects...`);
             this.playNodeParticles();
         }, 1.0);
     }
@@ -807,25 +728,16 @@ export class GameDirector02 extends Subscriber02 {
     
     private nextLevel(): void {
         const currentLevel = this.levelManagerCmp.getCurrentLevel();
-        cc.log(`🚀 GameDirector02: STARTING NEXT LEVEL PROCESS - Current Level: ${currentLevel}`);
         
         // Advance level via LevelManager
-        cc.log(`📈 GameDirector02: Calling LevelManager.nextLevel()...`);
         this.levelManagerCmp.nextLevel();
         
         const newLevel = this.levelManagerCmp.getCurrentLevel();
-        cc.log(`📊 GameDirector02: Level advanced from ${currentLevel} to ${newLevel}`);
         
-        // Reset game state (generateLevel will be called in callback)
-        cc.log(`🔄 GameDirector02: Resetting game state for next level ${newLevel}...`);
         this.resetGameState();
-        
-        cc.log(`✅ GameDirector02: Next level ${newLevel} process started!`);
     }
     
     private resetGameState(): void {
-        cc.log(`🔄 GameDirector02: Resetting game state...`);
-        
         // Play hide animation for nodes first, then clear everything
         this.nodeManagerCmp.playNodesHideAnimation(() => {
             this.finishResetGameState();
@@ -835,8 +747,6 @@ export class GameDirector02 extends Subscriber02 {
     }
     
     private finishResetGameState(): void {
-        cc.log(`🧹 GameDirector02: Finishing game state reset...`);
-        
         this.pathManagerCmp.clearAllPaths();
         this.isDrawingPath = false;
         this.selectedStartNode = null;
@@ -845,14 +755,11 @@ export class GameDirector02 extends Subscriber02 {
         this.completedPaths.clear();
         this.partialPaths.clear();
         this.occupiedCells.clear();
-        
-        cc.log(`🔍 DEBUG: Resetting lastGameResult from ${this.lastGameResult} to null`);
         this.lastGameResult = null; // Reset game result
         
         this.clearAllCellStates();
         this.nodeManagerCmp.clearAllNodes();
-        
-        cc.log(`✅ GameDirector02: Game state reset completed`);
+
     }
     
     private clearAllCellStates(): void {

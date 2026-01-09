@@ -37,14 +37,12 @@ export class BoardManager02 extends cc.Component {
     
     initBoard(): void {
         if (!this.cellPrefab || !this.boardContainer) {
-            cc.error('BoardManager02: Missing cellPrefab or boardContainer');
             return;
         }
         
         this.clearBoard();
         this.createCells();
-        
-        cc.log(`BoardManager02: Created ${this.gridSize}x${this.gridSize} board`);
+
     }
     
     private clearBoard(): void {
