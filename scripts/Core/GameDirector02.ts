@@ -38,6 +38,12 @@ export class GameDirector02 extends Subscriber02 {
     
     @property({displayName: "Timer Manager", type: cc.Node})
     timerManager: cc.Node = null;
+    
+    @property({displayName: "Sound Manager", type: cc.Node})
+    soundManager: cc.Node = null;
+    
+    @property({displayName: "Button Manager", type: cc.Node})
+    buttonManager: cc.Node = null;
 
     protected boardManagerCmp: BoardManager02 = null;
     protected nodeManagerCmp: NodeManager02 = null;
@@ -46,6 +52,8 @@ export class GameDirector02 extends Subscriber02 {
     protected resultManagerCmp: ResultManager02 = null;
     protected scoreManagerCmp: ScoreManager02 = null;
     protected timerManagerCmp: TimerManager02 = null;
+    protected soundManagerCmp: any = null; // SoundManager02
+    protected buttonManagerCmp: any = null; // ButtonManager02
     protected gameWriter: GameWriter02 = null;
     
     // Store bound event handlers for proper cleanup
@@ -80,6 +88,13 @@ export class GameDirector02 extends Subscriber02 {
         this.resultManagerCmp = this.resultManager.getComponent(ResultManager02);
         this.scoreManagerCmp = this.scoreManager.getComponent(ScoreManager02);
         this.timerManagerCmp = this.timerManager.getComponent(TimerManager02);
+        this.soundManagerCmp = this.soundManager ? this.soundManager.getComponent('SoundManager02') : null;
+        this.buttonManagerCmp = this.buttonManager ? this.buttonManager.getComponent('ButtonManager02') : null;
+        
+        // Set up button manager with sound manager reference
+        if (this.buttonManagerCmp && this.soundManagerCmp) {
+            this.buttonManagerCmp.setSoundManager(this.soundManagerCmp);
+        }
         
         // Create GameWriter instance (pure class)
         this.gameWriter = new GameWriter02();
@@ -88,6 +103,15 @@ export class GameDirector02 extends Subscriber02 {
     private setupEvents(): void {
         this.boardManager.on('cell-clicked', this.onCellClicked, this);
         this.levelManager.on('level-changed', this.onLevelChanged, this);
+        
+        // Listen for button manager events
+        if (this.buttonManagerCmp) {
+            this.buttonManagerCmp.registerEvent('game-pause', this.onGamePause.bind(this));
+            this.buttonManagerCmp.registerEvent('game-home', this.onGameHome.bind(this));
+            this.buttonManagerCmp.registerEvent('game-restart', this.onGameRestart.bind(this));
+            this.buttonManagerCmp.registerEvent('settings-opened', this.onSettingsOpened.bind(this));
+            this.buttonManagerCmp.registerEvent('settings-closed', this.onSettingsClosed.bind(this));
+        }
         
         // Listen for game result events from GameWriter
         this.gameWriter.on(GameResultEvent.WIN, this.onGameWin.bind(this));
@@ -916,6 +940,38 @@ export class GameDirector02 extends Subscriber02 {
         // TODO: Implement main menu navigation
         // For now, just restart the game
         this.restartGame();
+    }
+    
+    // Button Manager Event Handlers
+    private onGamePause(): void {
+        cc.log('⏸️ GameDirector02: Game paused via button');
+        // TODO: Implement pause functionality
+        // For now, just show settings
+        if (this.buttonManagerCmp) {
+            this.buttonManagerCmp.showSettings();
+        }
+    }
+    
+    private onGameHome(): void {
+        cc.log('🏠 GameDirector02: Home button pressed');
+        this.goToMainMenu();
+    }
+    
+    private onGameRestart(): void {
+        cc.log('🔄 GameDirector02: Restart button pressed');
+        this.restartGame();
+    }
+    
+    private onSettingsOpened(): void {
+        cc.log('⚙️ GameDirector02: Settings panel opened');
+        // Pause game when settings are open
+        // TODO: Implement actual pause logic
+    }
+    
+    private onSettingsClosed(): void {
+        cc.log('⚙️ GameDirector02: Settings panel closed');
+        // Resume game when settings are closed
+        // TODO: Implement actual resume logic
     }
     
     onDestroy(): void {

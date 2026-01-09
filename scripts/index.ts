@@ -10,6 +10,7 @@ export { ResultManager02 } from './Core/ResultManager02';
 export { Config02 } from './Helper/Config02';
 export { DataStore02 } from './Helper/DataStore02';
 export { AssetManager02 } from './Helper/AssetManager02';
+export { SoundManager02 } from './Helper/SoundManager02';
 
 // UI Components
 export { GridCell02 } from './UI/Components/GridCell02';
@@ -18,6 +19,7 @@ export { PathLine02 } from './UI/Components/PathLine02';
 export { LoadingScene02 } from './UI/LoadingScene02';
 export { LoseUIManager02 } from './UI/Components/LoseUIManager02';
 export { WinUIManager02 } from './UI/Components/WinUIManager02';
+export { ButtonManager02 } from './UI/ButtonManager02';
 
 // System Managers
 export { InputManager02 } from './System/InputManager02';
