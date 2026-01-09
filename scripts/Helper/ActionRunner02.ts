@@ -32,8 +32,6 @@ export class ActionRunner02 {
         this.isRunning = true;
         this.onAllComplete = onComplete;
         
-        cc.log(`▶️ ActionRunner02: Starting ${actions.length} actions`);
-        
         this.startCurrentAction();
         this.component.schedule(this.update.bind(this), 0);
     }
@@ -51,7 +49,6 @@ export class ActionRunner02 {
         if (!action) return;
         
         const name = action.name || `Action ${this.currentIndex + 1}`;
-        cc.log(`▶️ ActionRunner02: [${name}] onEnter (${action.duration}s)`);
         
         if (action.onEnter) {
             action.onEnter();
@@ -83,8 +80,6 @@ export class ActionRunner02 {
         if (!action) return;
         
         const name = action.name || `Action ${this.currentIndex + 1}`;
-        cc.log(`✅ ActionRunner02: [${name}] onFinish`);
-        
         if (action.onFinish) {
             action.onFinish();
         }
@@ -97,7 +92,6 @@ export class ActionRunner02 {
             this.startCurrentAction();
         } else {
             // All complete
-            cc.log(`🎉 ActionRunner02: All actions complete!`);
             this.isRunning = false;
             this.component.unschedule(this.update.bind(this));
             

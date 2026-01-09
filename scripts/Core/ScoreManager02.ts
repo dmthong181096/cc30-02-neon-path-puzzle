@@ -39,22 +39,18 @@ export class ScoreManager02 extends Subscriber02 {
     
     // Initialize for new level
     initLevel(levelNumber: number): void {
-        cc.log(`🎯 ScoreManager02: Initializing level ${levelNumber}`);
-        
         this.levelStartTime = Date.now();
         this.pathsCompleted = 0;
         this.totalMoves = 0;
         this.comboCount = 0;
         this.lastPathCompletionTime = 0;
         
-        cc.log(`⏰ ScoreManager02: Level ${levelNumber} timer started`);
-    }
+        }
     
     // Called when user makes a move (clicks a cell)
     recordMove(): void {
         this.totalMoves++;
-        cc.log(`📊 ScoreManager02: Move recorded - Total moves: ${this.totalMoves}`);
-    }
+        }
     
     // Called when a path is completed
     recordPathCompletion(pairNumber: number, pathLength: number): void {
@@ -65,8 +61,7 @@ export class ScoreManager02 extends Subscriber02 {
         const timeSinceLastPath = currentTime - this.lastPathCompletionTime;
         if (this.lastPathCompletionTime > 0 && timeSinceLastPath <= this.COMBO_TIME_WINDOW) {
             this.comboCount++;
-            cc.log(`🔥 ScoreManager02: COMBO x${this.comboCount}! Path completed within ${timeSinceLastPath}ms`);
-        } else {
+            } else {
             this.comboCount = 1; // Reset combo
         }
         
@@ -76,8 +71,7 @@ export class ScoreManager02 extends Subscriber02 {
         const pathScore = this.calculatePathScore(pathLength);
         this.addScore(pathScore);
         
-        cc.log(`✨ ScoreManager02: Path ${pairNumber} completed - Length: ${pathLength}, Score: +${pathScore}`);
-    }
+        }
     
     // Called when level is completed
     recordLevelCompletion(levelNumber: number, totalPairs: number): number {
@@ -85,13 +79,6 @@ export class ScoreManager02 extends Subscriber02 {
         const levelScore = this.calculateLevelScore(levelNumber, levelTime, totalPairs);
         
         this.addScore(levelScore);
-        
-        cc.log(`🎉 ScoreManager02: Level ${levelNumber} completed!`);
-        cc.log(`⏱️ Time: ${(levelTime / 1000).toFixed(1)}s`);
-        cc.log(`🎯 Moves: ${this.totalMoves}`);
-        cc.log(`🔗 Paths: ${this.pathsCompleted}/${totalPairs}`);
-        cc.log(`🔥 Max Combo: ${this.comboCount}`);
-        cc.log(`💯 Level Score: +${levelScore}`);
         
         return levelScore;
     }
@@ -134,8 +121,7 @@ export class ScoreManager02 extends Subscriber02 {
         // Perfect completion bonus
         if (this.pathsCompleted === totalPairs && this.totalMoves <= expectedMoves * 0.8) {
             score += 300; // Perfect bonus
-            cc.log(`⭐ ScoreManager02: PERFECT COMPLETION BONUS! +300`);
-        }
+            }
         
         return score;
     }
@@ -144,15 +130,11 @@ export class ScoreManager02 extends Subscriber02 {
         const oldScore = this.currentScore;
         this.currentScore += points;
         
-        cc.log(`💯 ScoreManager02: Adding ${points} points: ${oldScore} → ${this.currentScore}`);
-        cc.log(`🏆 ScoreManager02: Current high score: ${this.highScore}`);
-        
         // Always update high score if current score is higher
         if (this.currentScore > this.highScore) {
             const oldHighScore = this.highScore;
             this.highScore = this.currentScore;
             this.saveHighScore();
-            cc.log(`🏆 ScoreManager02: NEW HIGH SCORE! ${oldHighScore} → ${this.highScore}`);
             this.fireEvent('new-high-score', { score: this.highScore });
         }
         
@@ -168,8 +150,6 @@ export class ScoreManager02 extends Subscriber02 {
     }
     
     private updateScoreDisplay(): void {
-        cc.log(`📱 ScoreManager02: Updating display - Score: ${this.currentScore}, High: ${this.highScore}`);
-        
         this.scoreLabel.string = `${this.currentScore.toLocaleString()}`;
                 
         this.highScoreLabel.string = `${this.highScore.toLocaleString()}`;
@@ -183,8 +163,7 @@ export class ScoreManager02 extends Subscriber02 {
     
     private saveHighScore(): void {
         this.getDataStore().setHighScore(this.highScore);
-        cc.log(`💾 ScoreManager02: Saved high score: ${this.highScore}`);
-    }
+        }
     
     // Public getters
     getCurrentScore(): number {
@@ -206,7 +185,6 @@ export class ScoreManager02 extends Subscriber02 {
     
     // Reset score (for new game)
     resetScore(): void {
-        cc.log(`🔄 ScoreManager02: Resetting score`);
         this.currentScore = 0;
         this.updateScoreDisplay();
         this.fireEvent('score-reset');
@@ -238,8 +216,6 @@ export class ScoreManager02 extends Subscriber02 {
         const levelScore = Math.floor(baseScore * levelMultiplier) + timeBonus + efficiencyBonus + perfectBonus;
         const currentGameScore = this.currentScore; // Score accumulated in current game
         const totalScore = currentGameScore + timeBonus; // Current game score + time bonus
-        
-        cc.log(`📊 ScoreManager02: Score breakdown - Game: ${currentGameScore}, Time Bonus: ${timeBonus}, Total: ${totalScore}`);
         
         return {
             baseScore: Math.floor(baseScore * levelMultiplier),

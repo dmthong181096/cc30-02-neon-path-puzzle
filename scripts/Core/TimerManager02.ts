@@ -78,7 +78,6 @@ export class TimerManager02 extends Subscriber02 {
     // Add move to counter
     addMove(): void {
         this.totalMoves++;
-        cc.log(`📊 TimerManager02: Move added - Total moves: ${this.totalMoves}`);
         this.updateMovesDisplay();
     }
     
@@ -89,29 +88,23 @@ export class TimerManager02 extends Subscriber02 {
     
     // Reset moves counter
     resetMoves(): void {
-        cc.log(`🔄 TimerManager02: Resetting moves counter from ${this.totalMoves} to 0`);
         this.totalMoves = 0;
         this.updateMovesDisplay();
     }
         
     // Set direct callback for level time expired (bypass event system)
     setLevelTimeExpiredCallback(callback: (levelNumber: number) => void): void {
-        cc.log(`🔗 TimerManager02: Setting direct callback for level time expired`);
         this.levelTimeExpiredCallback = callback;
     }
     
     // Start level countdown timer
     startLevelTimer(levelNumber: number, duration: number = 60): void {
-        cc.log(`🚀 TimerManager02: Starting level timer for level ${levelNumber}, duration: ${duration}s`);
-        
         this.levelStartTime = Date.now();
         this.lastAnimatedSecond = -1; // Reset animation tracking
         
         // Remove existing level timer if any
         const hadExistingTimer = this.timers.has(this.LEVEL_TIMER_ID);
         this.removeTimer(this.LEVEL_TIMER_ID);
-        cc.log(`🔍 DEBUG: Had existing timer: ${hadExistingTimer}`);
-        
         this.addTimer(this.LEVEL_TIMER_ID, {
             id: this.LEVEL_TIMER_ID,
             startTime: this.levelStartTime,
@@ -130,23 +123,18 @@ export class TimerManager02 extends Subscriber02 {
                 }
             },
             onComplete: () => {
-                cc.log(`⏰ TimerManager02: Timer completed for level ${levelNumber} - calling direct callback`);
-                
                 // Use direct callback instead of event system
                 if (this.levelTimeExpiredCallback) {
-                    cc.log(`📞 TimerManager02: Calling direct callback for level ${levelNumber}`);
                     this.levelTimeExpiredCallback(levelNumber);
                 } else {
-                    cc.error(`❌ TimerManager02: No callback set for level time expired!`);
-                }
+                    }
                 
                 // Also fire event for other listeners (but main logic uses callback)
                 this.fireEvent('level-time-expired', { levelNumber });
             }
         });
         
-        cc.log(`✅ TimerManager02: Level timer started successfully`);
-    }
+        }
     
     // Stop level timer and return remaining time
     stopLevelTimer(): number {

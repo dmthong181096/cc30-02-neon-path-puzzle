@@ -15,20 +15,15 @@ export class ResultManager02 extends cc.Component {
     
     // Show lose screen with stats
     showGameOverAnimationWithStats(score: number, level: number, moves: number, onRestart?: () => void, onMainMenu?: () => void): void {
-        cc.log(`💀 ResultManager02: Showing lose screen - Score: ${score}, Level: ${level}, Moves: ${moves}`);
-        
         this.loseUIManager.showPopup(true ,{score, level, moves, onRestart, onMainMenu});
     }
     
     // Show win screen with score
     showWinAnimationWithScore(level: number, scoreData: any, moves: number, onNextLevel?: () => void, onMainMenu?: () => void): void {
-        cc.log(`🎉 ResultManager02: Showing win screen - Level: ${level}, Score: ${scoreData.totalScore}, Moves: ${moves}`);
-        
         if (this.winUIManager) {
             const data = { level, scoreData, moves, onNextLevel, onMainMenu };
             this.winUIManager.showPopup(true, data);
         } else {
-            cc.error(`❌ ResultManager02: WinUIManager not assigned! Game will wait for manual restart.`);
             // No automatic fallback - wait for user action
         }
     }

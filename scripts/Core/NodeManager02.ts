@@ -24,41 +24,30 @@ export class NodeManager02 extends Subscriber02 {
     }
     
     generateRandomNodes(): void {
-        cc.log('NodeManager02: generateRandomNodes() called');
         
         if (!this.nodePrefab || !this.boardManager) {
-            cc.error('NodeManager02: Missing nodePrefab or boardManager');
-            cc.log('NodeManager02: nodePrefab:', this.nodePrefab ? 'Available' : 'Missing');
-            cc.log('NodeManager02: boardManager:', this.boardManager ? 'Available' : 'Missing');
             return;
         }
         
         // Random number of pairs between minPairs and maxPairs
         this.numberOfPairs = this.getRandomPairCount();
-        cc.log(`NodeManager02: Will generate ${this.numberOfPairs} pairs`);
-        
         this.clearNodes();
         this.generateNodePairs();
         
         // Play appear animations with stagger
         this.playNodesAppearAnimation();
         
-        cc.log(`NodeManager02: Generated ${this.numberOfPairs} pairs (${this.numberOfPairs * 2} nodes total)`);
-        cc.log(`NodeManager02: Actual nodes created: ${this.nodes.length}`);
-    }
+        }
     
     private getRandomPairCount(): number {
         // Random between minPairs and maxPairs (inclusive)
         try {
             const {MAX_NODE_PAIR, MIN_NODE_PAIR} = this.getConfig().getMinMaxNodePair();
             const randomPairs = Math.floor(Math.random() * (MAX_NODE_PAIR - MIN_NODE_PAIR + 1)) + MIN_NODE_PAIR;
-            cc.log(`NodeManager02: Random pair count: ${randomPairs} (min: ${MIN_NODE_PAIR}, max: ${MAX_NODE_PAIR})`);
             return randomPairs;
         } catch (error) {
-            cc.error('NodeManager02: Error getting random pair count:', error);
             // Fallback to default values
             const defaultPairs = 4;
-            cc.log(`NodeManager02: Using fallback pair count: ${defaultPairs}`);
             return defaultPairs;
         }
     }
@@ -107,8 +96,7 @@ export class NodeManager02 extends Subscriber02 {
                 }
                 
                 if (attempts >= maxAttempts) {
-                    cc.warn(`NodeManager02: Could not find valid position for pair ${pairIndex}, node ${nodeInPair + 1}`);
-                }
+                    }
             }
             
             // Create the pair of nodes with unique color
@@ -128,7 +116,6 @@ export class NodeManager02 extends Subscriber02 {
         
         if (unusedColors.length === 0) {
             // If all colors used, start reusing (shouldn't happen with max 6 pairs and 9 colors)
-            cc.warn('NodeManager02: All colors used, reusing colors');
             return Math.floor(Math.random() * 9) + 1;
         }
         
@@ -140,7 +127,6 @@ export class NodeManager02 extends Subscriber02 {
     private createNodePair(pairNumber: number, positions: cc.Vec2[], colorId: number): void {
         const boardManagerComponent = this.boardManager.getComponent(BoardManager02);
         if (!boardManagerComponent) {
-            cc.error('NodeManager02: BoardManager02 component not found');
             return;
         }
         
@@ -155,28 +141,21 @@ export class NodeManager02 extends Subscriber02 {
     }
     
     private createNodeAtCell(cell: GridCell02, pairNumber: number, color: cc.Color, nodeIndex: number): void {
-        cc.log(`NodeManager02: Creating node ${pairNumber}-${nodeIndex} at cell (${cell.getRow()}, ${cell.getCol()})`);
         
         if (!this.nodePrefab) {
-            cc.error('NodeManager02: nodePrefab is null!');
             return;
         }
         
         const nodeInstance = cc.instantiate(this.nodePrefab);
         cell.node.addChild(nodeInstance);
         
-        cc.log(`NodeManager02: Node instance created:`, nodeInstance.name);
-        
         const nodeComponent = nodeInstance.getComponent(NodeItem02);
         if (nodeComponent) {
             nodeComponent.initNode(pairNumber, color, new cc.Vec2(cell.getRow(), cell.getCol()));
             this.nodes.push(nodeComponent);
             
-            cc.log(`NodeManager02: Created node ${pairNumber}-${nodeIndex} at (${cell.getRow()}, ${cell.getCol()})`);
-            cc.log(`NodeManager02: Total nodes in array: ${this.nodes.length}`);
-        } else {
-            cc.error(`NodeManager02: NodeItem02 component not found on prefab!`);
-        }
+            } else {
+            }
     }
     
     getNodes(): NodeItem02[] {
@@ -217,12 +196,9 @@ export class NodeManager02 extends Subscriber02 {
     }
     
     clearAllNodes(): void {
-        cc.log('NodeManager02: Clearing all existing nodes...');
-        
         // Destroy all existing node instances
         this.nodes.forEach(node => {
             if (node && node.node && node.node.isValid) {
-                cc.log(`NodeManager02: Destroying node ${node.getNodeNumber()} at (${node.getGridPosition().x}, ${node.getGridPosition().y})`);
                 node.node.destroy();
             }
         });
@@ -232,12 +208,9 @@ export class NodeManager02 extends Subscriber02 {
         this.occupiedCells = [];
         this.numberOfPairs = 0;
         
-        cc.log(`NodeManager02: All nodes cleared. Nodes array length: ${this.nodes.length}`);
-    }
+        }
     
     private playNodesAppearAnimation(): void {
-        cc.log(`🎬 NodeManager02: Playing appear animation for ${this.nodes.length} nodes`);
-        
         this.nodes.forEach((node, index) => {
             const delay = index * 0.1; // 0.1s delay between each node
             node.playAppearAnimation(delay);
@@ -245,8 +218,6 @@ export class NodeManager02 extends Subscriber02 {
     }
     
     playNodesHideAnimation(onComplete?: () => void): void {
-        cc.log(`🎬 NodeManager02: Playing hide animation for ${this.nodes.length} nodes`);
-        
         let completedCount = 0;
         const totalNodes = this.nodes.length;
         
@@ -267,8 +238,6 @@ export class NodeManager02 extends Subscriber02 {
     }
     
     playPairCompletedAnimation(pairNumber: number): void {
-        cc.log(`🎉 NodeManager02: Playing completed animation for pair ${pairNumber}`);
-        
         const pairNodes = this.getNodesByPairNumber(pairNumber);
         if (pairNodes.length === 2) {
             // First node starts immediately

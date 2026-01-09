@@ -51,7 +51,6 @@ export class LoseUIManager02 extends BasePopupItem {
     }
     
     private onRetryClicked(): void {
-        cc.log(`🔄 LoseUIManager02: Retry button clicked`);
         this.hidePopup();
         
         if (this.onRetryCallback) {
@@ -62,7 +61,6 @@ export class LoseUIManager02 extends BasePopupItem {
     }
     
     private onMainMenuClicked(): void {
-        cc.log(`📱 LoseUIManager02: Main menu button clicked`);
         this.hidePopup();
         
         if (this.onMainMenuCallback) {

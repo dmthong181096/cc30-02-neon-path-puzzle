@@ -6,42 +6,30 @@ export class GameWriter02 extends EventEmitter02 {
     
     constructor() {
         super();
-        cc.log('📝 GameWriter02: Initialized');
-    }
+        }
     
     checkGameResult(gameState: GameState02): void {
-        cc.log(`📝 GameWriter02: Checking game result...`);
-        
         if (this.checkWinCondition(gameState)) {
-            cc.log(`🎉 GameWriter02: WIN detected!`);
             this.emit(GameResultEvent.WIN);
             return;
         }
         
         if (this.checkLoseCondition(gameState)) {
-            cc.log(`💀 GameWriter02: LOSE detected!`);
             this.emit(GameResultEvent.LOSE);
             return;
         }
         
-        cc.log(`✅ GameWriter02: Game continues...`);
         this.emit(GameResultEvent.CONTINUE);
     }
     
     private checkWinCondition(gameState: GameState02): boolean {
         const completedCount = gameState.completedPaths.size;
         const totalPairs = gameState.totalPairs;
-        cc.log(`📝 GameWriter02: Win check - ${completedCount}/${totalPairs} pairs completed`);
-        
         const isWin = completedCount === totalPairs;
-        cc.log(`📝 GameWriter02: Win condition result: ${isWin}`);
-        
         return isWin;
     }
     
     private checkLoseCondition(gameState: GameState02): boolean {
-        cc.log(`📝 GameWriter02: Checking lose condition...`);
-        
         const incompletePairs = this.getIncompletePairs(gameState);
         
         if (incompletePairs.length === 0) {
@@ -55,7 +43,6 @@ export class GameWriter02 extends EventEmitter02 {
                 const end: CellPosition = { row: pairNodes[1].row, col: pairNodes[1].col };
                 
                 if (!this.canConnect(start, end, pairNumber, gameState)) {
-                    cc.log(`❌ GameWriter02: Pair ${pairNumber} cannot be connected - LOSE!`);
                     return true;
                 }
             }

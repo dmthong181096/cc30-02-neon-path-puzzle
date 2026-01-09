@@ -76,8 +76,7 @@ export class WinUIManager02 extends BasePopupItem {
         this.onNextLevelCallback = onNextLevel;
         this.onMainMenuCallback = onMainMenu;
         
-        cc.log(`🎉 WinUIManager02: Updated UI - Game Score: ${scoreData.currentGameScore}, Moves: ${moves}, Time Bonus: ${scoreData.timeBonus}, Total: ${scoreData.totalScore}`);
-    }
+        }
     
     public showPopup(isAnim = true, data): void {
         // Update labels
@@ -86,7 +85,6 @@ export class WinUIManager02 extends BasePopupItem {
     }
     
     private onNextLevelClicked(): void {
-        cc.log(`▶️ WinUIManager02: Next level button clicked`);
         this.hidePopup();
         
         if (this.onNextLevelCallback) {
@@ -97,7 +95,6 @@ export class WinUIManager02 extends BasePopupItem {
     }
     
     private onMainMenuClicked(): void {
-        cc.log(`📱 WinUIManager02: Main menu button clicked`);
         this.hidePopup();
         
         if (this.onMainMenuCallback) {

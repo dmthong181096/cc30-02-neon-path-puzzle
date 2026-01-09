@@ -18,7 +18,6 @@ export class PathManager02 extends cc.Component {
     
     drawDirectLineWorld(fromWorld: cc.Vec2, toWorld: cc.Vec2, color: cc.Color, isCompleted: boolean = false): PathLine02 | null {
         if (!this.pathLinePrefab || !this.pathContainer) {
-            cc.error('PathManager02: Missing prefab or container!');
             return null;
         }
         
@@ -27,7 +26,6 @@ export class PathManager02 extends cc.Component {
         
         const pathLine = lineNode.getComponent(PathLine02);
         if (!pathLine) {
-            cc.error('PathManager02: PathLine02 component not found on prefab!');
             return null;
         }
         
@@ -60,7 +58,6 @@ export class PathManager02 extends cc.Component {
             });
             
             this.currentPathLines = [];
-            cc.log(`PathManager02: Completed path for node ${nodeNumber} with ${this.completedPathLines.get(nodeNumber).length} lines`);
         }
     }
     
@@ -72,8 +69,7 @@ export class PathManager02 extends cc.Component {
             }
         });
         this.currentPathLines = [];
-        cc.log('PathManager02: Cleared current path');
-    }
+        }
     
     savePartialPathForNode(nodeNumber: number): void {
         // Move current path lines to partial paths
@@ -86,8 +82,7 @@ export class PathManager02 extends cc.Component {
             });
             
             this.currentPathLines = [];
-            cc.log(`PathManager02: Saved partial path for node ${nodeNumber}`);
-        }
+            }
     }
     
     clearPartialPathForNode(nodeNumber: number): void {
@@ -100,8 +95,7 @@ export class PathManager02 extends cc.Component {
                 }
             });
             this.partialPathLines.delete(nodeNumber);
-            cc.log(`PathManager02: Cleared partial path for node ${nodeNumber}`);
-        }
+            }
     }
     
     clearAllPaths(): void {
@@ -132,7 +126,6 @@ export class PathManager02 extends cc.Component {
             this.pathContainer.removeAllChildren();
         }
         
-        cc.log('PathManager02: Cleared all paths (current, completed, and partial)');
     }
     
     private worldToLocal(worldPos: cc.Vec2): cc.Vec2 {

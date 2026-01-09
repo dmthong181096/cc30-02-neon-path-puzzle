@@ -28,7 +28,6 @@ export class NodeItem02 extends Subscriber02 {
         this.updateVisual();
         this.setupInitialState();
         
-        cc.log(`NodeItem02: Node ${number} initialized at (${gridPos.x}, ${gridPos.y})`);
     }
     
     private setupInitialState(): void {
@@ -46,8 +45,6 @@ export class NodeItem02 extends Subscriber02 {
     }
     
     playAppearAnimation(delay: number = 0): void {
-        cc.log(`🎬 NodeItem02: Playing appear animation for node ${this.nodeNumber} with ${delay}s delay`);
-        
         // Ensure node is visible and reset scale
         this.node.active = true;
         this.node.setScale(0, 0, 1);
@@ -62,8 +59,6 @@ export class NodeItem02 extends Subscriber02 {
     }
     
     playHideAnimation(delay: number = 0, onComplete?: () => void): void {
-        cc.log(`🎬 NodeItem02: Playing hide animation for node ${this.nodeNumber} with ${delay}s delay`);
-        
         // Scale down animation
         const scaleDown = cc.tween(this.node)
             .delay(delay)
@@ -78,8 +73,6 @@ export class NodeItem02 extends Subscriber02 {
     }
     
     playCompletedAnimation(): void {
-        cc.log(`🎉 NodeItem02: Playing completed animation for node ${this.nodeNumber}`);
-        
         // Gentle bounce animation - smaller scale
         const bounce = cc.tween(this.node)
             .to(0.2, { scale: cc.v3(1.1, 1.1, 1.0) }, { easing: 'sineOut' })

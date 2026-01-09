@@ -108,8 +108,6 @@ export class PathLine02 extends cc.Component {
     }
     
     playCompletedAnimation(): void {
-        cc.log(`🎉 PathLine02: Playing completed animation`);
-        
         // Gentle pulse effect - smaller changes
         const originalWidth = this.lineWidth;
         const pulseWidth = originalWidth + 2; // Smaller increase
