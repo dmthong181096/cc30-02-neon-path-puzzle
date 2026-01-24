@@ -163,7 +163,7 @@ export class ScoreManager02 extends Subscriber02 {
     
     private saveHighScore(): void {
         this.getDataStore().setHighScore(this.highScore);
-        }
+    }
     
     // Public getters
     getCurrentScore(): number {

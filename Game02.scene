@@ -52,7 +52,7 @@
       "y": 0,
       "z": 0
     },
-    "autoReleaseAssets": false,
+    "autoReleaseAssets": true,
     "_globals": {
       "__id__": 360
     },
@@ -7487,6 +7487,7 @@
     "overlay": {
       "__id__": 147
     },
+    "btnClose": null,
     "scoreLabel": {
       "__id__": 173
     },
@@ -10948,6 +10949,7 @@
     "overlay": {
       "__id__": 196
     },
+    "btnClose": null,
     "levelLabel": {
       "__id__": 269
     },
@@ -13406,11 +13408,11 @@
     "overlay": {
       "__id__": 283
     },
-    "btnSetting": {
-      "__id__": 95
-    },
     "btnClose": {
       "__id__": 334
+    },
+    "btnSetting": {
+      "__id__": 95
     },
     "_id": "caza5GELVPprafkyf7dKpI"
   },
@@ -13616,6 +13618,9 @@
     },
     "soundManager": null,
     "buttonManager": null,
+    "btnBackToLobby": {
+      "__id__": 111
+    },
     "_id": "8e/kp7F9ZA6JCMfcPNBxcv"
   },
   {

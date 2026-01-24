@@ -71,7 +71,7 @@ export class LoseUIManager02 extends BasePopupItem {
     }
     
     onDestroy(): void {
-        this.retryButton.off(cc.Node.EventType.TOUCH_END, this.onRetryClicked, this);      
-        this.mainMenuButton.off(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
+        // this.retryButton.off(cc.Node.EventType.TOUCH_END, this.onRetryClicked, this);      
+        // this.mainMenuButton.off(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
     }
 }

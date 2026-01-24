@@ -45,6 +45,9 @@ export class GameDirector02 extends Subscriber02 {
     @property({displayName: "Button Manager", type: cc.Node})
     buttonManager: cc.Node = null;
 
+    @property({displayName:"Button Back To Lobby", type: cc.Node})
+    btnBackToLobby: cc.Node = null;
+
     protected boardManagerCmp: BoardManager02 = null;
     protected nodeManagerCmp: NodeManager02 = null;
     protected pathManagerCmp: PathManager02 = null;
@@ -123,6 +126,8 @@ export class GameDirector02 extends Subscriber02 {
         
         this.timerManagerCmp.registerEvent('time-warning', this.boundOnTimeWarning);
         this.timerManagerCmp.registerEvent('countdown-tick', this.boundOnCountdownTick);
+
+        this.btnBackToLobby.on(cc.Node.EventType.TOUCH_END, this.onClickBackToLobby, this);
     }
     
     private setupKeyboardEvents(): void {
@@ -773,24 +778,28 @@ export class GameDirector02 extends Subscriber02 {
     }
     
     onDestroy(): void {
-        if (this.boardManager) {
-            this.boardManager.off('cell-clicked', this.onCellClicked, this);
-        }
+        // if (this.boardManager) {
+        //     this.boardManager.off('cell-clicked', this.onCellClicked, this);
+        // }
         
-        if (this.levelManager) {
-            this.levelManager.off('level-changed', this.onLevelChanged, this);
-        }
+        // if (this.levelManager) {
+        //     this.levelManager.off('level-changed', this.onLevelChanged, this);
+        // }
         
-        if (this.gameWriter) {
-            this.gameWriter.removeAllListeners();
-        }
+        // if (this.gameWriter) {
+        //     this.gameWriter.removeAllListeners();
+        // }
         
-        if (this.timerManagerCmp) {
-            this.timerManagerCmp.unregisterEvent('level-time-expired', this.boundOnLevelTimeExpired);
-            this.timerManagerCmp.unregisterEvent('time-warning', this.boundOnTimeWarning);
-            this.timerManagerCmp.unregisterEvent('countdown-tick', this.boundOnCountdownTick);
-        }
+        // if (this.timerManagerCmp) {
+        //     this.timerManagerCmp.unregisterEvent('level-time-expired', this.boundOnLevelTimeExpired);
+        //     this.timerManagerCmp.unregisterEvent('time-warning', this.boundOnTimeWarning);
+        //     this.timerManagerCmp.unregisterEvent('countdown-tick', this.boundOnCountdownTick);
+        // }
         
-        cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+        // cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+    }
+    
+    private onClickBackToLobby(): void {
+          cc.director.loadScene("Lobby");
     }
 }

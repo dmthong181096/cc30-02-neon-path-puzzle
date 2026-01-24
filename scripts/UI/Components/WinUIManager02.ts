@@ -105,7 +105,7 @@ export class WinUIManager02 extends BasePopupItem {
     }
     
     onDestroy(): void {
-        this.nextLevelButton.off(cc.Node.EventType.TOUCH_END, this.onNextLevelClicked, this);
-        this.mainMenuButton.off(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
+        // this.nextLevelButton.off(cc.Node.EventType.TOUCH_END, this.onNextLevelClicked, this);
+        // this.mainMenuButton.off(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
     }
 }
