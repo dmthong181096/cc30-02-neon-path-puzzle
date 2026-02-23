@@ -111,10 +111,10 @@ export class GameDirector02 extends Subscriber02 {
             this.buttonManagerCmp.registerEvent('settings-opened', this.onSettingsOpened.bind(this));
             this.buttonManagerCmp.registerEvent('settings-closed', this.onSettingsClosed.bind(this));
         }
-        
-        this.gameWriter.on(GameResultEvent.WIN, this.onGameWin.bind(this));
-        this.gameWriter.on(GameResultEvent.LOSE, this.onGameLose.bind(this));
-        this.gameWriter.on(GameResultEvent.CONTINUE, this.onGameContinue.bind(this));
+        const {WIN, LOSE, CONTINUE} = GameResultEvent;
+        this.gameWriter.on(WIN, this.onGameWin.bind(this));
+        this.gameWriter.on(LOSE, this.onGameLose.bind(this));
+        this.gameWriter.on(CONTINUE, this.onGameContinue.bind(this));
         
         this.boundOnLevelTimeExpired = this.onLevelTimeExpired.bind(this);
         this.boundOnTimeWarning = this.onTimeWarning.bind(this);
@@ -638,11 +638,13 @@ export class GameDirector02 extends Subscriber02 {
                 // this.goToMainMenu();
                 this.onClickBackToLobby();
             });
-        }, 0.5);
+        }, 1.5);
         
         this.scheduleOnce(() => {
             this.playNodeParticles();
-        }, 1.0);
+        }, 0.5);
+
+        
     }
     
     private flashCompletedPaths(): void {
