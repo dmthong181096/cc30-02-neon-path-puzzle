@@ -7497,7 +7497,7 @@
     "retryButton": {
       "__id__": 183
     },
-    "mainMenuButton": {
+    "btnExitGame": {
       "__id__": 187
     },
     "_id": "ebz94cY1VGNYqAUgviK7/c"
@@ -9880,7 +9880,7 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 162.006,
+      "x": 0,
       "y": -508,
       "z": 0
     },
@@ -10142,7 +10142,7 @@
         "__id__": 261
       }
     ],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 264
@@ -10193,7 +10193,7 @@
       "__id__": 260
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 262
@@ -10305,8 +10305,8 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 300,
-      "height": 86
+      "width": 490,
+      "height": 90
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -10336,12 +10336,12 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "40977112-3d34-463a-aaa1-caf488ce2748@f9941",
+      "__uuid__": "8b35d468-d612-46da-868d-2a47ce0f91d9@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
-    "_type": 1,
+    "_type": 0,
     "_fillType": 0,
-    "_sizeMode": 0,
+    "_sizeMode": 2,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,

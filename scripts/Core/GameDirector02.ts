@@ -612,7 +612,8 @@ export class GameDirector02 extends Subscriber02 {
         this.resultManagerCmp.showGameOverAnimationWithStats(currentScore, currentLevel, totalMoves, () => {
             this.restartGame();
         }, () => {
-            this.goToMainMenu();
+            // this.goToMainMenu();
+            this.onClickBackToLobby();
         });
     }
     
@@ -634,7 +635,8 @@ export class GameDirector02 extends Subscriber02 {
             this.resultManagerCmp.showWinAnimationWithScore(currentLevel, scoreBreakdown, totalMoves, () => {
                 this.nextLevel();
             }, () => {
-                this.goToMainMenu();
+                // this.goToMainMenu();
+                this.onClickBackToLobby();
             });
         }, 0.5);
         

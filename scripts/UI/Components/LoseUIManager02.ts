@@ -16,11 +16,11 @@ export class LoseUIManager02 extends BasePopupItem {
     @property({ displayName: "Retry Button", type: cc.Node })
     retryButton: cc.Node = null;
     
-    @property({ displayName: "Main Menu Button", type: cc.Node })
-    mainMenuButton: cc.Node = null;
+    @property({ displayName: "Button Exit Game", type: cc.Node })
+    btnExitGame: cc.Node = null;
     
     private onRetryCallback: () => void = null;
-    private onMainMenuCallback: () => void = null;
+    private onExitGameCallback: () => void = null;
 
 
     init(): void {
@@ -30,7 +30,7 @@ export class LoseUIManager02 extends BasePopupItem {
     
     private setupButtons(): void {
         this.retryButton.on(cc.Node.EventType.TOUCH_END, this.onRetryClicked, this);
-        this.mainMenuButton.on(cc.Node.EventType.TOUCH_END, this.onMainMenuClicked, this);
+        this.btnExitGame.on(cc.Node.EventType.TOUCH_END, this.onExitGameClicked, this);
     }
 
 
@@ -39,7 +39,7 @@ export class LoseUIManager02 extends BasePopupItem {
         this.scoreLabel.string = score;
         this.levelLabel.string = level;
         this.onRetryCallback = onRestart;
-        this.onMainMenuCallback = onMainMenu;
+        this.onExitGameCallback = onMainMenu;
         
     }
     
@@ -60,12 +60,12 @@ export class LoseUIManager02 extends BasePopupItem {
         }
     }
     
-    private onMainMenuClicked(): void {
+    private onExitGameClicked(): void {
         this.hidePopup();
         
-        if (this.onMainMenuCallback) {
+        if (this.onExitGameCallback) {
             this.scheduleOnce(() => {
-                this.onMainMenuCallback();
+                this.onExitGameCallback();
             }, 0.3);
         }
     }
