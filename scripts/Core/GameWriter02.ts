@@ -9,17 +9,18 @@ export class GameWriter02 extends EventEmitter02 {
         }
     
     checkGameResult(gameState: GameState02): void {
+        const {WIN, LOSE, CONTINUE} = GameResultEvent
         if (this.checkWinCondition(gameState)) {
-            this.emit(GameResultEvent.WIN);
+            this.emit(WIN);
             return;
         }
         
         if (this.checkLoseCondition(gameState)) {
-            this.emit(GameResultEvent.LOSE);
+            this.emit(LOSE);
             return;
         }
         
-        this.emit(GameResultEvent.CONTINUE);
+        this.emit(CONTINUE);
     }
     
     private checkWinCondition(gameState: GameState02): boolean {
@@ -36,13 +37,15 @@ export class GameWriter02 extends EventEmitter02 {
             return false;
         }
         
-        for (const pairNumber of incompletePairs) {
+        for (let i = 0; i < incompletePairs.length; i++) {
+            const pairNumber = incompletePairs[i];
             const pairNodes = gameState.allNodes.filter(n => n.pairNumber === pairNumber);
             if (pairNodes.length === 2) {
                 const start: CellPosition = { row: pairNodes[0].row, col: pairNodes[0].col };
                 const end: CellPosition = { row: pairNodes[1].row, col: pairNodes[1].col };
                 
-                if (!this.canConnect(start, end, pairNumber, gameState)) {
+                const canConnect = this.canConnect(start, end, pairNumber, gameState);
+                if (!canConnect) {
                     return true;
                 }
             }
@@ -52,8 +55,26 @@ export class GameWriter02 extends EventEmitter02 {
     }
     
     private getIncompletePairs(gameState: GameState02): number[] {
-        const allPairNumbers = [...new Set(gameState.allNodes.map(n => n.pairNumber))];
-        return allPairNumbers.filter(p => !gameState.completedPaths.has(p));
+        // Extract all pair numbers manually to avoid Set spread issues on mobile
+        const pairNumbersSet = new Set<number>();
+        for (let i = 0; i < gameState.allNodes.length; i++) {
+            pairNumbersSet.add(gameState.allNodes[i].pairNumber);
+        }
+        
+        // Convert Set to Array manually
+        const allPairNumbers: number[] = [];
+        pairNumbersSet.forEach(num => {
+            allPairNumbers.push(num);
+        });
+        
+        const incompletePairs: number[] = [];
+        for (let i = 0; i < allPairNumbers.length; i++) {
+            const pairNum = allPairNumbers[i];
+            if (!gameState.completedPaths.has(pairNum)) {
+                incompletePairs.push(pairNum);
+            }
+        }    
+        return incompletePairs;
     }
     
     private canConnect(start: CellPosition, end: CellPosition, pairNumber: number, gameState: GameState02): boolean {
@@ -75,14 +96,21 @@ export class GameWriter02 extends EventEmitter02 {
             { row: -1, col: 0 }
         ];
         
-        while (queue.length > 0) {
+        let iterations = 0;
+        const maxIterations = 1000; // Prevent infinite loop
+        
+        while (queue.length > 0 && iterations < maxIterations) {
+            iterations++;
+            
             const current = queue.shift();
+            if (!current) break;
             
             if (current.pos.row === end.row && current.pos.col === end.col) {
                 return current.path;
             }
             
-            for (const dir of directions) {
+            for (let i = 0; i < directions.length; i++) {
+                const dir = directions[i];
                 const newPos: CellPosition = {
                     row: current.pos.row + dir.row,
                     col: current.pos.col + dir.col
@@ -124,28 +152,38 @@ export class GameWriter02 extends EventEmitter02 {
         
         // Check current drawing path (block for other pairs)
         if (gameState.isDrawingPath && gameState.currentPath.length > 0) {
-            const isInCurrentPath = gameState.currentPath.some(c => 
-                c.row === pos.row && c.col === pos.col
-            );
-            if (isInCurrentPath) {
-                return gameState.currentDrawingPairNumber === pairNumber;
+            for (let i = 0; i < gameState.currentPath.length; i++) {
+                const c = gameState.currentPath[i];
+                if (c.row === pos.row && c.col === pos.col) {
+                    return gameState.currentDrawingPairNumber === pairNumber;
+                }
             }
         }
         
         // Check partial paths (block for other pairs)
-        for (const [partialPairNumber, partialPath] of gameState.partialPaths) {
+        const partialPathsArray = Array.from(gameState.partialPaths.entries());
+        for (let i = 0; i < partialPathsArray.length; i++) {
+            const [partialPairNumber, partialPath] = partialPathsArray[i];
             if (partialPairNumber === pairNumber) continue;
             
-            const isInPartialPath = partialPath.some(c => 
-                c.row === pos.row && c.col === pos.col
-            );
-            if (isInPartialPath) {
-                return false;
+            for (let j = 0; j < partialPath.length; j++) {
+                const c = partialPath[j];
+                if (c.row === pos.row && c.col === pos.col) {
+                    return false;
+                }
             }
         }
         
         // Check other nodes
-        const nodeAtCell = gameState.allNodes.find(n => n.row === pos.row && n.col === pos.col);
+        let nodeAtCell = null;
+        for (let i = 0; i < gameState.allNodes.length; i++) {
+            const n = gameState.allNodes[i];
+            if (n.row === pos.row && n.col === pos.col) {
+                nodeAtCell = n;
+                break;
+            }
+        }
+        
         if (nodeAtCell) {
             return nodeAtCell.pairNumber === pairNumber;
         }
